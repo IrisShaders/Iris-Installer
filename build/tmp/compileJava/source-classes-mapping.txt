@@ -1,0 +1,11 @@
+net/hypercubemc/iris_installer/layouts/VerticalLayout.java
+ net.hypercubemc.iris_installer.layouts.VerticalLayout
+net/hypercubemc/iris_installer/InstallerMeta.java
+ net.hypercubemc.iris_installer.InstallerMeta
+ net.hypercubemc.iris_installer.InstallerMeta$Edition
+net/hypercubemc/iris_installer/VanillaLauncherIntegration.java
+ net.hypercubemc.iris_installer.VanillaLauncherIntegration
+ net.hypercubemc.iris_installer.VanillaLauncherIntegration$Icon
+net/hypercubemc/iris_installer/Installer.java
+ net.hypercubemc.iris_installer.Installer
+ net.hypercubemc.iris_installer.Installer$Downloader

@@ -1,0 +1,3 @@
+Manifest-Version: 1.0
+Main-Class: net.hypercubemc.iris_installer.Installer
+

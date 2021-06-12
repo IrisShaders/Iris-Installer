@@ -1,0 +1,95 @@
+plugins {
+    id 'java'
+    id 'application'
+    id "de.undercouch.download" version "4.1.1"
+}
+
+sourceCompatibility = JavaVersion.VERSION_1_8
+targetCompatibility = JavaVersion.VERSION_1_8
+
+archivesBaseName = project.archives_base_name
+version = project.version
+group = project.maven_group
+
+repositories {
+    maven {
+        url "https://maven.fabricmc.net"
+    }
+
+    mavenCentral()
+    mavenLocal()
+}
+
+dependencies {
+    implementation "org.json:json:20210307"
+    implementation "com.formdev:flatlaf:1.1.2"
+
+    implementation "net.fabricmc:fabric-installer:0.7.3"
+}
+
+application {
+    mainClass.set(project.main_class)
+}
+
+class FileOutput extends DefaultTask {
+    @OutputFile
+    File output
+}
+
+def bootstrapVersion = "0.1.2"
+def bootstrapArch = "i686"
+
+task downloadBootstrap(type: Download) {
+    src "https://maven.fabricmc.net/net/fabricmc/fabric-installer-native-bootstrap/windows-${bootstrapArch}/${bootstrapVersion}/windows-${bootstrapArch}-${bootstrapVersion}.exe"
+    dest project.buildDir
+}
+
+task nativeExe(dependsOn: [downloadBootstrap], type: FileOutput) {
+    output = file("${projectDir}/build/libs/${archivesBaseName}-${project.version}.exe")
+    outputs.upToDateWhen { false }
+
+    doFirst {
+        output.delete()
+    }
+
+    doLast {
+        output.createNewFile()
+        output.setBytes downloadBootstrap.outputFiles.first().readBytes()
+
+        output.append jar.archiveFile.get().getAsFile().readBytes()
+    }
+}
+build.dependsOn nativeExe
+
+jar {
+//    into 'mods', {
+//        from 'mods'
+//    }
+
+    manifest {
+        attributes("Main-Class": application.mainClass)
+    }
+
+    from "LICENSE"
+
+    from (configurations.compileClasspath.filter{ it.exists() }.collect { it.isDirectory() ? it : zipTree(it) }) {
+        exclude 'META-INF/*.SF'
+        exclude 'META-INF/*.DSA'
+        exclude 'META-INF/*.RSA'
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    // ensure that the encoding is set to UTF-8, no matter what the system default is
+    // this fixes some edge cases with special characters not displaying correctly
+    // see http://yodaconditions.net/blog/fix-for-java-file-encoding-problems-with-gradle.html
+    // If Javadoc is generated, this must be specified in that task too.
+    it.options.encoding = "UTF-8"
+
+    // JDK 9 introduced a new way of specifying the target java version that will make sure no newer classes or methods are used.
+    // We'll use that if it's available, but otherwise we'll use the older option.
+    def targetVersion = 8
+    if (JavaVersion.current().isJava9Compatible()) {
+        it.options.release = targetVersion
+    }
+}
