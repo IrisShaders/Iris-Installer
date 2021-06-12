@@ -203,7 +203,7 @@ public class Installer {
 
             // Use IMS's custom fabric loader if "use custom loader" is set
             if (useCustomLoader) {
-                Reference.metaServerUrl = "https://raw.githubusercontent.com/IMS212/IrisMaven/master/";
+                Reference.metaServerUrl = "https://raw.githubusercontent.com/IrisShaders/Iris-Installer-Maven/master/";
                 System.out.println("Using custom loader");
             } else {
                 Reference.metaServerUrl = "https://meta.fabricmc.net/";
