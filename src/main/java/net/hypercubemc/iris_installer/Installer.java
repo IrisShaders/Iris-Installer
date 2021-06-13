@@ -211,9 +211,10 @@ public class Installer {
             }
 
             String loaderName = useCustomLoader ? "iris-fabric-loader" : "fabric-loader";
-            String loaderVersion = Main.LOADER_META.getLatestVersion(false).getVersion();
 
             try {
+                URL url = new URL("https://raw.githubusercontent.com/IrisShaders/Iris-Installer-Maven/master/latest-loader");
+                String loaderVersion = useCustomLoader ? Utils.readTextFile(url) : Main.LOADER_META.getLatestVersion(false).getVersion();
                 VanillaLauncherIntegration.installToLauncher(getVanillaGameDir(), getInstallDir(), useCustomLoader ? selectedEditionDisplayName : "Fabric Loader " + selectedVersion, selectedVersion, loaderName, loaderVersion, useCustomLoader ? VanillaLauncherIntegration.Icon.IRIS : VanillaLauncherIntegration.Icon.FABRIC);
             } catch (IOException e) {
                 System.out.println("Failed to install version and profile to vanilla launcher!");
