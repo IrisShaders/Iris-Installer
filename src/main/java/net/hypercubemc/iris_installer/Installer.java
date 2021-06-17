@@ -234,7 +234,7 @@ public class Installer {
 
             String zipName = selectedEditionName + ".zip";
 
-            String downloadURL = BASE_URL + selectedVersion + "/" + zipName;
+            String downloadURL = "https://github.com/IrisShaders/Iris-Installer-Files/releases/latest/download/" + zipName;
 
             File saveLocation = getStorageDirectory().resolve(zipName).toFile();
 
