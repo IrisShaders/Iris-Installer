@@ -266,67 +266,63 @@ public class Installer {
                     if (!installDir.exists() || !installDir.isDirectory()) installDir.mkdir();
 
                     File modsFolder = getInstallDir().resolve(useCustomLoader ? "iris-reserved" : "mods").toFile();
-                    if (!modsFolder.exists() || !modsFolder.isDirectory()) {
-                        modsFolder.mkdir();
-                    }
-
-                    if (!useCustomLoader) {
-                        int result = JOptionPane.showConfirmDialog(frame,"An existing mods folder was found in the selected game directory. Do you want to update/install iris?", "Mods Folder Detected",
-                                JOptionPane.YES_NO_OPTION,
-                                JOptionPane.QUESTION_MESSAGE);
-                        if (result != JOptionPane.YES_OPTION) {
-                            cancelled = true;
-                        }
-                    }
-
-                    if (cancelled) {
-                        readyAll();
-                        return;
-                    }
-
                     File[] modsFolderContents = modsFolder.listFiles();
+
                     if (modsFolderContents != null) {
-                        boolean shownOptifineDialog = false;
-                        boolean failedToRemoveOptifine = false;
+                        boolean isEmpty = modsFolderContents.length == 0;
 
-                        for (File mod : modsFolderContents) {
-                            if (mod.getName().toLowerCase().contains("optifine") || mod.getName().toLowerCase().contains("optifabric")) {
-                                if (!shownOptifineDialog) {
-                                    int result = JOptionPane.showOptionDialog(frame,"Optifine was found in your mods folder, but Optifine is incompatible with Iris. Do you want to remove it, or cancel the installation?", "Optifine Detected",
-                                            JOptionPane.DEFAULT_OPTION,
-                                            JOptionPane.WARNING_MESSAGE, null, new String[]{"Yes", "Cancel"}, "Yes");
-
-                                    shownOptifineDialog = true;
-                                    if (result != JOptionPane.YES_OPTION) {
-                                        cancelled = true;
-                                        break;
-                                    }
-                                }
-
-                                if (!mod.delete()) failedToRemoveOptifine = true;
+                        if (!useCustomLoader && modsFolder.exists() && modsFolder.isDirectory() && !isEmpty) {
+                            int result = JOptionPane.showConfirmDialog(frame,"An existing mods folder was found in the selected game directory. Do you want to update/install iris?", "Mods Folder Detected",
+                                    JOptionPane.YES_NO_OPTION,
+                                    JOptionPane.QUESTION_MESSAGE);
+                            if (result != JOptionPane.YES_OPTION) {
+                                cancelled = true;
                             }
                         }
 
-                        if (failedToRemoveOptifine) {
-                            System.out.println("Failed to delete optifine from mods folder");
-                            JOptionPane.showMessageDialog(frame, "Failed to remove optifine from your mods folder, please make sure your game is closed and try again!", "Failed to remove optifine", JOptionPane.ERROR_MESSAGE);
-                            cancelled = true;
+                        if (!cancelled) {
+                            boolean shownOptifineDialog = false;
+                            boolean failedToRemoveOptifine = false;
+
+                            for (File mod : modsFolderContents) {
+                                if (mod.getName().toLowerCase().contains("optifine") || mod.getName().toLowerCase().contains("optifabric")) {
+                                    if (!shownOptifineDialog) {
+                                        int result = JOptionPane.showOptionDialog(frame,"Optifine was found in your mods folder, but Optifine is incompatible with Iris. Do you want to remove it, or cancel the installation?", "Optifine Detected",
+                                                JOptionPane.DEFAULT_OPTION,
+                                                JOptionPane.WARNING_MESSAGE, null, new String[]{"Yes", "Cancel"}, "Yes");
+
+                                        shownOptifineDialog = true;
+                                        if (result != JOptionPane.YES_OPTION) {
+                                            cancelled = true;
+                                            break;
+                                        }
+                                    }
+
+                                    if (!mod.delete()) failedToRemoveOptifine = true;
+                                }
+                            }
+
+                            if (failedToRemoveOptifine) {
+                                System.out.println("Failed to delete optifine from mods folder");
+                                JOptionPane.showMessageDialog(frame, "Failed to remove optifine from your mods folder, please make sure your game is closed and try again!", "Failed to remove optifine", JOptionPane.ERROR_MESSAGE);
+                                cancelled = true;
+                            }
                         }
 
-                        boolean failedToRemoveIrisOrSodium = false;
-
                         if (!cancelled) {
+                            boolean failedToRemoveIrisOrSodium = false;
+
                             for (File mod : modsFolderContents) {
                                 if (mod.getName().toLowerCase().contains("iris") || mod.getName().toLowerCase().contains("sodium-fabric")) {
                                     if (!mod.delete()) failedToRemoveIrisOrSodium = true;
                                 }
                             }
-                        }
 
-                        if (failedToRemoveIrisOrSodium) {
-                            System.out.println("Failed to remove Iris or Sodium from mods folder to update them!");
-                            JOptionPane.showMessageDialog(frame, "Failed to remove iris and sodium from your mods folder to update them, please make sure your game is closed and try again!", "Failed to prepare mods for update", JOptionPane.ERROR_MESSAGE);
-                            cancelled = true;
+                            if (failedToRemoveIrisOrSodium) {
+                                System.out.println("Failed to remove Iris or Sodium from mods folder to update them!");
+                                JOptionPane.showMessageDialog(frame, "Failed to remove iris and sodium from your mods folder to update them, please make sure your game is closed and try again!", "Failed to prepare mods for update", JOptionPane.ERROR_MESSAGE);
+                                cancelled = true;
+                            }
                         }
                     }
 
@@ -334,6 +330,8 @@ public class Installer {
                         readyAll();
                         return;
                     }
+
+                    if (!modsFolder.exists() || !modsFolder.isDirectory()) modsFolder.mkdir();
 
                     boolean installSuccess = installFromZip(saveLocation);
                     if (installSuccess) {
