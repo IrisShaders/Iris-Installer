@@ -228,7 +228,6 @@ public class Installer {
                 storageDir.mkdir();
             }
 
-
             button.setText("Downloading...");
             progressBar.setValue(0);
             setInteractionEnabled(false);
