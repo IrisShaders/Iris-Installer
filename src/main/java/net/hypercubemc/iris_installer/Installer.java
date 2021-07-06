@@ -232,7 +232,7 @@ public class Installer {
             progressBar.setValue(0);
             setInteractionEnabled(false);
 
-            String zipName = selectedEditionName + ".zip";
+            String zipName = selectedEditionName + "-" + selectedVersion + ".zip";
 
             String downloadURL = "https://github.com/IrisShaders/Iris-Installer-Files/releases/latest/download/" + zipName;
 
