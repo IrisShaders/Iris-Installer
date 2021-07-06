@@ -64,6 +64,7 @@ public class VanillaLauncherIntegration {
         JSONObject profile = profiles.has(foundProfileName) ? profiles.getJSONObject(foundProfileName) : createProfile(profileName, instanceDir, versionId, icon);
         profile.put("name", profileName);
         profile.put("lastUsed", Utils.ISO_8601.format(new Date())); // Update timestamp to bring to top of profile list
+        profile.put("lastVersionId", versionId);
 
         profiles.put(foundProfileName, profile);
         jsonObject.put("profiles", profiles);
