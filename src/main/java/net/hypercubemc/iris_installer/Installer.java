@@ -35,11 +35,11 @@ public class Installer {
     JComboBox<String> editionDropdown;
     JComboBox<String> versionDropdown;
     JButton installDirectoryPicker;
-    JCheckBox useCustomLoaderCheckbox;
+    JCheckBox installAsModCheckbox;
     JProgressBar progressBar;
 
     boolean finishedSuccessfulInstall = false;
-    boolean useCustomLoader = true;
+    boolean installAsMod = false;
 
     public Installer() {
 
@@ -174,18 +174,18 @@ public class Installer {
         installDirectoryPanel.add(installDirectoryPickerLabel);
         installDirectoryPanel.add(installDirectoryPicker);
 
-        useCustomLoaderCheckbox = new JCheckBox("Use Custom Loader (Recommended)", true);
-        useCustomLoaderCheckbox.setHorizontalTextPosition(SwingConstants.LEFT);
-        useCustomLoaderCheckbox.setAlignmentX(Component.CENTER_ALIGNMENT);
-        useCustomLoaderCheckbox.addActionListener(e -> {
-            useCustomLoader = useCustomLoaderCheckbox.isSelected();
+        installAsModCheckbox = new JCheckBox("Install as Fabric Mod", false);
+        installAsModCheckbox.setHorizontalTextPosition(SwingConstants.LEFT);
+        installAsModCheckbox.setAlignmentX(Component.CENTER_ALIGNMENT);
+        installAsModCheckbox.addActionListener(e -> {
+            installAsMod = installAsModCheckbox.isSelected();
             readyAll();
         });
 
         topPanel.add(editionPanel);
         topPanel.add(versionPanel);
         topPanel.add(installDirectoryPanel);
-        topPanel.add(useCustomLoaderCheckbox);
+        topPanel.add(installAsModCheckbox);
 
         JPanel bottomPanel = new JPanel();
 
@@ -201,8 +201,8 @@ public class Installer {
                 return;
             }
 
-            // Use IMS's custom fabric loader if "use custom loader" is set
-            if (useCustomLoader) {
+            // Use IMS's custom fabric loader if "Install as Fabric Mod" is not set
+            if (!installAsMod) {
                 Reference.metaServerUrl = "https://raw.githubusercontent.com/IrisShaders/Iris-Installer-Maven/master/";
                 System.out.println("Using custom loader");
             } else {
@@ -210,12 +210,12 @@ public class Installer {
                 System.out.println("Using fabric loader");
             }
 
-            String loaderName = useCustomLoader ? "iris-fabric-loader" : "fabric-loader";
+            String loaderName = installAsMod ? "fabric-loader" : "iris-fabric-loader";
 
             try {
                 URL loaderVersionUrl = new URL("https://raw.githubusercontent.com/IrisShaders/Iris-Installer-Maven/master/latest-loader");
-                String loaderVersion = useCustomLoader ? Utils.readTextFile(loaderVersionUrl) : Main.LOADER_META.getLatestVersion(false).getVersion();
-                VanillaLauncherIntegration.installToLauncher(getVanillaGameDir(), getInstallDir(), useCustomLoader ? selectedEditionDisplayName : "Fabric Loader " + selectedVersion, selectedVersion, loaderName, loaderVersion, useCustomLoader ? VanillaLauncherIntegration.Icon.IRIS : VanillaLauncherIntegration.Icon.FABRIC);
+                String loaderVersion = installAsMod ? Main.LOADER_META.getLatestVersion(false).getVersion() : Utils.readTextFile(loaderVersionUrl);
+                VanillaLauncherIntegration.installToLauncher(getVanillaGameDir(), getInstallDir(), installAsMod ? "Fabric Loader " + selectedVersion : selectedEditionDisplayName, selectedVersion, loaderName, loaderVersion, installAsMod ? VanillaLauncherIntegration.Icon.FABRIC: VanillaLauncherIntegration.Icon.IRIS);
             } catch (IOException e) {
                 System.out.println("Failed to install version and profile to vanilla launcher!");
                 e.printStackTrace();
@@ -265,13 +265,13 @@ public class Installer {
                     File installDir = getInstallDir().toFile();
                     if (!installDir.exists() || !installDir.isDirectory()) installDir.mkdir();
 
-                    File modsFolder = getInstallDir().resolve(useCustomLoader ? "iris-reserved" : "mods").toFile();
+                    File modsFolder = getInstallDir().resolve(installAsMod ? "mods" : "iris-reserved").toFile();
                     File[] modsFolderContents = modsFolder.listFiles();
 
                     if (modsFolderContents != null) {
                         boolean isEmpty = modsFolderContents.length == 0;
 
-                        if (!useCustomLoader && modsFolder.exists() && modsFolder.isDirectory() && !isEmpty) {
+                        if (installAsMod && modsFolder.exists() && modsFolder.isDirectory() && !isEmpty) {
                             int result = JOptionPane.showConfirmDialog(frame,"An existing mods folder was found in the selected game directory. Do you want to update/install iris?", "Mods Folder Detected",
                                     JOptionPane.YES_NO_OPTION,
                                     JOptionPane.QUESTION_MESSAGE);
@@ -340,7 +340,7 @@ public class Installer {
                         editionDropdown.setEnabled(true);
                         versionDropdown.setEnabled(true);
                         installDirectoryPicker.setEnabled(true);
-                        useCustomLoaderCheckbox.setEnabled(true);
+                        installAsModCheckbox.setEnabled(true);
                     } else {
                         button.setText("Installation failed!");
                         System.out.println("Failed to install to mods folder!");
@@ -412,7 +412,7 @@ public class Installer {
             while (entry != null) {
                 String entryName = entry.getName();
 
-                if (useCustomLoader && entryName.startsWith("mods/")) {
+                if (!installAsMod && entryName.startsWith("mods/")) {
                     entryName = entryName.replace("mods/", "iris-reserved/");
                 }
 
@@ -498,7 +498,7 @@ public class Installer {
         editionDropdown.setEnabled(enabled);
         versionDropdown.setEnabled(enabled);
         installDirectoryPicker.setEnabled(enabled);
-        useCustomLoaderCheckbox.setEnabled(enabled);
+        installAsModCheckbox.setEnabled(enabled);
         button.setEnabled(enabled);
     }
 
