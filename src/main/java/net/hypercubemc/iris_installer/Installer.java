@@ -154,7 +154,7 @@ public class Installer {
     List<String> gameVersions = GAME_VERSIONS.subList(0, GAME_VERSIONS.size()); // Clone the list
     Collections.reverse(
         gameVersions); // Reverse the order of the list so that the latest version is on top and
-                       // older versions downward
+    // older versions downward
     String[] gameVersionList = gameVersions.toArray(new String[0]);
     selectedVersion = gameVersionList[0];
 
