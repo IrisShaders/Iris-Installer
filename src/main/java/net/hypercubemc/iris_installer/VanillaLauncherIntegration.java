@@ -22,7 +22,7 @@ public class VanillaLauncherIntegration {
         String versionId = String.format("%s-%s-%s", loaderName, loaderVersion, gameVersion);
 
         installVersion(vanillaGameDir, gameVersion, loaderName, loaderVersion);
-        ProfileInstaller.LauncherType launcherType = getLauncherType(vanillaGameDir);
+        ProfileInstaller.LauncherType launcherType = System.getProperty("os.name").contains("Windows") ? getLauncherType(vanillaGameDir) : /* Return standalone if we aren't on Windows.*/ ProfileInstaller.LauncherType.WIN32;
         installProfile(vanillaGameDir, instanceDir, profileName, versionId, icon, launcherType);
     }
 
