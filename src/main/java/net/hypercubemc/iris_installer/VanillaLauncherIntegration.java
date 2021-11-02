@@ -1,22 +1,29 @@
 package net.hypercubemc.iris_installer;
 
+import net.fabricmc.installer.client.ProfileInstaller;
 import net.fabricmc.installer.util.Reference;
 import net.fabricmc.installer.util.Utils;
 import org.json.JSONObject;
 
+import javax.swing.*;
+import java.awt.*;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.nio.file.Files;
+import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class VanillaLauncherIntegration {
     public static void installToLauncher(Path vanillaGameDir, Path instanceDir, String profileName, String gameVersion, String loaderName, String loaderVersion, Icon icon) throws IOException {
         String versionId = String.format("%s-%s-%s", loaderName, loaderVersion, gameVersion);
 
         installVersion(vanillaGameDir, gameVersion, loaderName, loaderVersion);
-        installProfile(vanillaGameDir, instanceDir, profileName, versionId, icon);
+        ProfileInstaller.LauncherType launcherType = getLauncherType(vanillaGameDir);
+        installProfile(vanillaGameDir, instanceDir, profileName, versionId, icon, launcherType);
     }
 
     public static void installVersion(Path mcDir, String gameVersion, String loaderName, String loaderVersion) throws IOException {
@@ -36,8 +43,8 @@ public class VanillaLauncherIntegration {
         Utils.downloadFile(profileUrl, profileJson);
     }
 
-    private static void installProfile(Path mcDir, Path instanceDir, String profileName, String versionId, Icon icon) throws IOException {
-        Path launcherProfiles = mcDir.resolve("launcher_profiles.json");
+    private static void installProfile(Path mcDir, Path instanceDir, String profileName, String versionId, Icon icon, ProfileInstaller.LauncherType launcherType) throws IOException {
+        Path launcherProfiles = mcDir.resolve(launcherType.profileJsonName);
         if (!Files.exists(launcherProfiles)) {
             System.out.println("Could not find launcher_profiles");
             return;
@@ -127,6 +134,36 @@ public class VanillaLauncherIntegration {
             var7.printStackTrace();
             return "TNT";
         }
+    }
+
+
+    private static ProfileInstaller.LauncherType showLauncherTypeSelection() {
+        Object[] options = new Object[]{Utils.BUNDLE.getString("prompt.launcher.type.xbox"), Utils.BUNDLE.getString("prompt.launcher.type.win32")};
+        int result = JOptionPane.showOptionDialog((Component)null, Utils.BUNDLE.getString("prompt.launcher.type.body"), Utils.BUNDLE.getString("installer.title"), 1, 3, (javax.swing.Icon)null, options, options[0]);
+        if (result == -1) {
+            return null;
+        } else {
+            return result == 0 ? ProfileInstaller.LauncherType.MICROSOFT_STORE : ProfileInstaller.LauncherType.WIN32;
+        }
+    }
+
+    public static ProfileInstaller.LauncherType getLauncherType(Path vanillaGameDir) {
+        ProfileInstaller.LauncherType launcherType;
+        List<ProfileInstaller.LauncherType> types = getInstalledLauncherTypes(vanillaGameDir);
+        if (types.size() == 1) {
+            launcherType = types.get(0);
+        } else {
+            launcherType = showLauncherTypeSelection();
+            if (launcherType == null) {
+                System.out.println(Utils.BUNDLE.getString("prompt.ready.install"));
+                return ProfileInstaller.LauncherType.WIN32;
+            }
+        }
+        return launcherType;
+    }
+
+    public static List<ProfileInstaller.LauncherType> getInstalledLauncherTypes(Path mcDir) {
+        return Arrays.stream(ProfileInstaller.LauncherType.values()).filter((launcherType) -> Files.exists(mcDir.resolve(launcherType.profileJsonName), new LinkOption[0])).collect(Collectors.toList());
     }
 
     public enum Icon {
