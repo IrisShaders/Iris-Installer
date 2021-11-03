@@ -150,13 +150,17 @@ public class VanillaLauncherIntegration {
     public static ProfileInstaller.LauncherType getLauncherType(Path vanillaGameDir) {
         ProfileInstaller.LauncherType launcherType;
         List<ProfileInstaller.LauncherType> types = getInstalledLauncherTypes(vanillaGameDir);
-        if (types.size() == 1) {
+        if (types.size() == 0) {
+            // Default to WIN32, since nothing will happen anyway
+            launcherType = ProfileInstaller.LauncherType.WIN32;
+        } else if (types.size() == 1) {
+            System.out.println("Found only one launcher (" + types.get(0) + "), will proceed with that!");
             launcherType = types.get(0);
         } else {
             launcherType = showLauncherTypeSelection();
             if (launcherType == null) {
                 System.out.println(Utils.BUNDLE.getString("prompt.ready.install"));
-                return ProfileInstaller.LauncherType.WIN32;
+                launcherType = ProfileInstaller.LauncherType.WIN32;
             }
         }
         return launcherType;
