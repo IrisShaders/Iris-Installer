@@ -21,13 +21,13 @@ public class VanillaLauncherIntegration {
     public static void installToLauncher(Path vanillaGameDir, Path instanceDir, String profileName, String gameVersion, String loaderName, String loaderVersion, Icon icon) throws IOException {
         String versionId = String.format("%s-%s-%s", loaderName, loaderVersion, gameVersion);
 
-        installVersion(vanillaGameDir, gameVersion, loaderName, loaderVersion);
         ProfileInstaller.LauncherType launcherType = System.getProperty("os.name").contains("Windows") ? getLauncherType(vanillaGameDir) : /* Return standalone if we aren't on Windows.*/ ProfileInstaller.LauncherType.WIN32;
+        installVersion(vanillaGameDir, gameVersion, loaderName, loaderVersion, launcherType);
         installProfile(vanillaGameDir, instanceDir, profileName, versionId, icon, launcherType);
     }
 
-    public static void installVersion(Path mcDir, String gameVersion, String loaderName, String loaderVersion) throws IOException {
-        System.out.println("Installing " + gameVersion + " with fabric " + loaderVersion);
+    public static void installVersion(Path mcDir, String gameVersion, String loaderName, String loaderVersion, ProfileInstaller.LauncherType launcherType) throws IOException {
+        System.out.println("Installing " + gameVersion + " with fabric " + loaderVersion + " to launcher " + launcherType);
         String versionId = String.format("%s-%s-%s", loaderName, loaderVersion, gameVersion);
         Path versionsDir = mcDir.resolve("versions");
         Path profileDir = versionsDir.resolve(versionId);
