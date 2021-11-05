@@ -21,6 +21,10 @@ public class VanillaLauncherIntegration {
         String versionId = String.format("%s-%s-%s", loaderName, loaderVersion, gameVersion);
 
         ProfileInstaller.LauncherType launcherType = System.getProperty("os.name").contains("Windows") ? getLauncherType(vanillaGameDir) : /* Return standalone if we aren't on Windows.*/ ProfileInstaller.LauncherType.WIN32;
+        if (launcherType == null) {
+            // The installation has been canceled via closing the window, most likely.
+            return;
+        }
         installVersion(vanillaGameDir, gameVersion, loaderName, loaderVersion, launcherType);
         installProfile(vanillaGameDir, instanceDir, profileName, versionId, icon, launcherType);
     }
@@ -138,7 +142,7 @@ public class VanillaLauncherIntegration {
 
     private static ProfileInstaller.LauncherType showLauncherTypeSelection() {
         String[] options = new String[]{Utils.BUNDLE.getString("prompt.launcher.type.xbox"), Utils.BUNDLE.getString("prompt.launcher.type.win32")};
-        int result = JOptionPane.showOptionDialog(null, Utils.BUNDLE.getString("prompt.launcher.type.body"), Utils.BUNDLE.getString("installer.title"), 1, 3, (javax.swing.Icon)null, options, options[0]);
+        int result = JOptionPane.showOptionDialog(null, Utils.BUNDLE.getString("prompt.launcher.type.body"), Utils.BUNDLE.getString("installer.title"), JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
         if (result == -1) {
             return null;
         } else {
@@ -149,26 +153,13 @@ public class VanillaLauncherIntegration {
     public static ProfileInstaller.LauncherType getLauncherType(Path vanillaGameDir) {
         ProfileInstaller.LauncherType launcherType;
         List<ProfileInstaller.LauncherType> types = getInstalledLauncherTypes(vanillaGameDir);
-        if (types.size() == 0) {
-            // Default to WIN32, since nothing will happen anyway
-            System.out.println("No launchers found, profile installation will not take place!");
-            launcherType = ProfileInstaller.LauncherType.WIN32;
-        } else if (types.size() == 1) {
-            System.out.println("Found only one launcher (" + types.get(0) + "), will proceed with that!");
-            launcherType = types.get(0);
-        } else {
-            System.out.println("Multiple launchers found, showing selection screen!");
-            launcherType = showLauncherTypeSelection();
-            if (launcherType == null) {
-                System.out.println(Utils.BUNDLE.getString("prompt.ready.install"));
-                launcherType = ProfileInstaller.LauncherType.WIN32;
-            }
-        }
+        launcherType = showLauncherTypeSelection();
+
         return launcherType;
     }
 
     public static List<ProfileInstaller.LauncherType> getInstalledLauncherTypes(Path mcDir) {
-        return Arrays.stream(ProfileInstaller.LauncherType.values()).filter((launcherType) -> Files.exists(mcDir.resolve(launcherType.profileJsonName), new LinkOption[0])).collect(Collectors.toList());
+        return Arrays.stream(ProfileInstaller.LauncherType.values()).filter((launcherType) -> Files.exists(mcDir.resolve(launcherType.profileJsonName))).collect(Collectors.toList());
     }
 
     public enum Icon {
