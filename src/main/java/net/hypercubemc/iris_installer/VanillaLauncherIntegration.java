@@ -6,7 +6,6 @@ import net.fabricmc.installer.util.Utils;
 import org.json.JSONObject;
 
 import javax.swing.*;
-import java.awt.*;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -138,8 +137,8 @@ public class VanillaLauncherIntegration {
 
 
     private static ProfileInstaller.LauncherType showLauncherTypeSelection() {
-        Object[] options = new Object[]{Utils.BUNDLE.getString("prompt.launcher.type.xbox"), Utils.BUNDLE.getString("prompt.launcher.type.win32")};
-        int result = JOptionPane.showOptionDialog((Component)null, Utils.BUNDLE.getString("prompt.launcher.type.body"), Utils.BUNDLE.getString("installer.title"), 1, 3, (javax.swing.Icon)null, options, options[0]);
+        String[] options = new String[]{Utils.BUNDLE.getString("prompt.launcher.type.xbox"), Utils.BUNDLE.getString("prompt.launcher.type.win32")};
+        int result = JOptionPane.showOptionDialog(null, Utils.BUNDLE.getString("prompt.launcher.type.body"), Utils.BUNDLE.getString("installer.title"), 1, 3, (javax.swing.Icon)null, options, options[0]);
         if (result == -1) {
             return null;
         } else {
