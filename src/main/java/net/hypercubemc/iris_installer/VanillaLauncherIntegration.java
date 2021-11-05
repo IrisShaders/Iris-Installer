@@ -10,23 +10,23 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.nio.file.Files;
-import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class VanillaLauncherIntegration {
-    public static void installToLauncher(Path vanillaGameDir, Path instanceDir, String profileName, String gameVersion, String loaderName, String loaderVersion, Icon icon) throws IOException {
+    public static boolean installToLauncher(Path vanillaGameDir, Path instanceDir, String profileName, String gameVersion, String loaderName, String loaderVersion, Icon icon) throws IOException {
         String versionId = String.format("%s-%s-%s", loaderName, loaderVersion, gameVersion);
 
         ProfileInstaller.LauncherType launcherType = System.getProperty("os.name").contains("Windows") ? getLauncherType(vanillaGameDir) : /* Return standalone if we aren't on Windows.*/ ProfileInstaller.LauncherType.WIN32;
         if (launcherType == null) {
             // The installation has been canceled via closing the window, most likely.
-            return;
+            return false;
         }
         installVersion(vanillaGameDir, gameVersion, loaderName, loaderVersion, launcherType);
         installProfile(vanillaGameDir, instanceDir, profileName, versionId, icon, launcherType);
+        return true;
     }
 
     public static void installVersion(Path mcDir, String gameVersion, String loaderName, String loaderVersion, ProfileInstaller.LauncherType launcherType) throws IOException {
@@ -153,7 +153,21 @@ public class VanillaLauncherIntegration {
     public static ProfileInstaller.LauncherType getLauncherType(Path vanillaGameDir) {
         ProfileInstaller.LauncherType launcherType;
         List<ProfileInstaller.LauncherType> types = getInstalledLauncherTypes(vanillaGameDir);
-        launcherType = showLauncherTypeSelection();
+        if (types.size() == 0) {
+            // Default to WIN32, since nothing will happen anyway
+            System.out.println("No launchers found, profile installation will not take place!");
+            launcherType = ProfileInstaller.LauncherType.WIN32;
+        } else if (types.size() == 1) {
+            System.out.println("Found only one launcher (" + types.get(0) + "), will proceed with that!");
+            launcherType = types.get(0);
+        } else {
+            System.out.println("Multiple launchers found, showing selection screen!");
+            launcherType = showLauncherTypeSelection();
+            if (launcherType == null) {
+                System.out.println(Utils.BUNDLE.getString("prompt.ready.install"));
+                launcherType = ProfileInstaller.LauncherType.WIN32;
+            }
+        }
 
         return launcherType;
     }
