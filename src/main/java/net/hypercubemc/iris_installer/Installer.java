@@ -175,6 +175,8 @@ public class Installer {
         installDirectoryPanel.add(installDirectoryPicker);
 
         installAsModCheckbox = new JCheckBox("Install as Fabric Mod", false);
+        installAsModCheckbox.setToolTipText("If this box is checked, Iris will be installed to your mods \n folder," +
+                        "allowing you to use Iris with other Fabric mods!");
         installAsModCheckbox.setHorizontalTextPosition(SwingConstants.LEFT);
         installAsModCheckbox.setAlignmentX(Component.CENTER_ALIGNMENT);
         installAsModCheckbox.addActionListener(e -> {
