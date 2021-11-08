@@ -53,6 +53,7 @@ public class Installer {
 
     public void start() {
         boolean dark = DarkModeDetector.isDarkMode();
+        System.setProperty("apple.awt.application.appearance", "system");
         if (dark) {
             FlatDarkLaf.install();
         } else {
