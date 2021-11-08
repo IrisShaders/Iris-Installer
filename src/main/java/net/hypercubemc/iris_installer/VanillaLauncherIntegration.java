@@ -46,7 +46,9 @@ public class VanillaLauncherIntegration {
         Files.createFile(dummyJar);
         URL profileUrl = new URL(Reference.getMetaServerEndpoint(String.format("v2/versions/loader/%s/%s/profile/json", gameVersion, loaderVersion)));
         Json profileJson = Json.read(profileUrl);
-        editVersionJson(profileJson);
+        if (loaderName.equals("iris-fabric-loader")) {
+            editVersionJson(profileJson);
+        }
         Utils.writeToFile(profileJsonPath, profileJson.toString());
     }
     
