@@ -1,4 +1,5 @@
 package net.hypercubemc.iris_installer;
+import com.formdev.flatlaf.FlatDarkLaf;
 import com.formdev.flatlaf.FlatLightLaf;
 import net.fabricmc.installer.Main;
 import net.fabricmc.installer.util.MetaHandler;
@@ -51,10 +52,15 @@ public class Installer {
     }
 
     public void start() {
-        FlatLightLaf.install();
+        boolean dark = DarkModeDetector.isDarkMode();
+        if (dark) {
+            FlatDarkLaf.install();
+        } else {
+            FlatLightLaf.install();
+        }
 
         try {
-            UIManager.setLookAndFeel(new FlatLightLaf());
+            UIManager.setLookAndFeel(dark ? new FlatDarkLaf() : new FlatLightLaf());
         } catch (Exception e) {
             System.out.println("Failed to set UI theme!");
             e.printStackTrace();
