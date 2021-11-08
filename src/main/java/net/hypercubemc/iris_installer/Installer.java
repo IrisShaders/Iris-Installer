@@ -203,15 +203,6 @@ public class Installer {
                 return;
             }
 
-            // Use IMS's custom fabric loader if "Install as Fabric Mod" is not set
-            if (!installAsMod) {
-                Reference.metaServerUrl = "https://raw.githubusercontent.com/IrisShaders/Iris-Installer-Maven/master/";
-                System.out.println("Using custom loader");
-            } else {
-                Reference.metaServerUrl = "https://meta.fabricmc.net/";
-                System.out.println("Using fabric loader");
-            }
-
             String loaderName = installAsMod ? "fabric-loader" : "iris-fabric-loader";
 
             try {

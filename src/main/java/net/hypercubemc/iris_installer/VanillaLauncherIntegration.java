@@ -5,6 +5,8 @@ import net.fabricmc.installer.util.Reference;
 import net.fabricmc.installer.util.Utils;
 import org.json.JSONObject;
 
+import mjson.Json;
+
 import javax.swing.*;
 import java.io.IOException;
 import java.io.InputStream;
@@ -34,7 +36,7 @@ public class VanillaLauncherIntegration {
         String versionId = String.format("%s-%s-%s", loaderName, loaderVersion, gameVersion);
         Path versionsDir = mcDir.resolve("versions");
         Path profileDir = versionsDir.resolve(versionId);
-        Path profileJson = profileDir.resolve(versionId + ".json");
+        Path profileJsonPath = profileDir.resolve(versionId + ".json");
         if (!Files.exists(profileDir)) {
             Files.createDirectories(profileDir);
         }
@@ -43,7 +45,25 @@ public class VanillaLauncherIntegration {
         Files.deleteIfExists(dummyJar);
         Files.createFile(dummyJar);
         URL profileUrl = new URL(Reference.getMetaServerEndpoint(String.format("v2/versions/loader/%s/%s/profile/json", gameVersion, loaderVersion)));
-        Utils.downloadFile(profileUrl, profileJson);
+        Json profileJson = Json.read(profileUrl);
+        editVersionJson(profileJson);
+        Utils.writeToFile(profileJsonPath, profileJson.toString());
+    }
+    
+    private static void editVersionJson(Json profileJson) {
+        Json.Factory factory = Json.factory();
+        Map<String, Json> json = profileJson.asJsonMap();
+        // Replace fabric-loader-etc with iris-fabric-loader-etc
+        json.compute("id", (ignored, existing) -> factory.string("iris-"+existing.asString()));
+        // Replace loader maven url and name
+        for (Json entry : json.get("libraries").asJsonList()) {
+            final String id = "net.fabricmc:fabric-loader:";
+            String name = entry.asJsonMap().get("name").asString();
+            if (name.startsWith("net.fabricmc:fabric-loader:")) {
+                entry.asJsonMap().put("name", factory.string("net.coderbot:iris-loader:" + name.substring(id.length())));
+                entry.asJsonMap().put("url", factory.string("https://raw.githubusercontent.com/IrisShaders/Iris-Installer-Maven/master/"));
+            }
+        }
     }
 
     private static void installProfile(Path mcDir, Path instanceDir, String profileName, String versionId, Icon icon, ProfileInstaller.LauncherType launcherType) throws IOException {
