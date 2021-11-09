@@ -1,4 +1,5 @@
 package net.hypercubemc.iris_installer;
+import com.formdev.flatlaf.FlatDarkLaf;
 import com.formdev.flatlaf.FlatLightLaf;
 import net.fabricmc.installer.Main;
 import net.fabricmc.installer.util.MetaHandler;
@@ -51,13 +52,12 @@ public class Installer {
     }
 
     public void start() {
-        FlatLightLaf.install();
-
-        try {
-            UIManager.setLookAndFeel(new FlatLightLaf());
-        } catch (Exception e) {
-            System.out.println("Failed to set UI theme!");
-            e.printStackTrace();
+        boolean dark = DarkModeDetector.isDarkMode();
+        System.setProperty("apple.awt.application.appearance", "system");
+        if (dark) {
+            FlatDarkLaf.setup();
+        } else {
+            FlatLightLaf.setup();
         }
 
         Main.LOADER_META = new MetaHandler(Reference.getMetaServerEndpoint("v2/versions/loader"));
