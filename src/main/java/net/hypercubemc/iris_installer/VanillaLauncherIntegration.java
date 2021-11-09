@@ -1,11 +1,10 @@
 package net.hypercubemc.iris_installer;
 
+import mjson.Json;
 import net.fabricmc.installer.client.ProfileInstaller;
 import net.fabricmc.installer.util.Reference;
 import net.fabricmc.installer.util.Utils;
 import org.json.JSONObject;
-
-import mjson.Json;
 
 import javax.swing.*;
 import java.io.IOException;
@@ -14,7 +13,6 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
-import java.util.List;
 import java.util.stream.Collectors;
 
 public class VanillaLauncherIntegration {
@@ -56,7 +54,7 @@ public class VanillaLauncherIntegration {
         Json.Factory factory = Json.factory();
         Map<String, Json> json = profileJson.asJsonMap();
         // Replace fabric-loader-etc with iris-fabric-loader-etc
-        json.compute("id", (ignored, existing) -> factory.string("iris-"+existing.asString()));
+        json.compute("id", (ignored, existing) -> factory.string("iris-" + existing.asString()));
         // Replace loader maven url and name
         for (Json entry : json.get("libraries").asJsonList()) {
             final String id = "net.fabricmc:fabric-loader:";
