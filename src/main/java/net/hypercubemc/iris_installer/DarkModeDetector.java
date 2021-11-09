@@ -1,57 +1,54 @@
 package net.hypercubemc.iris_installer;
 
-import java.awt.*;
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.StringWriter;
 import java.util.regex.Pattern;
 
 // Based off HanSolo's Detector, with added support for GNOME, and removed support for macOS accent colors for Java 8 compatibility. Original: https://gist.github.com/HanSolo/7cf10b86efff8ca2845bf5ec2dd0fe1d
 public class DarkModeDetector {
-    public enum OperatingSystem { WINDOWS, MACOS, LINUX, SOLARIS, NONE }
+    public enum OperatingSystem {WINDOWS, MACOS, LINUX, SOLARIS, NONE}
 
-    private static final String REGQUERY_UTIL  = "reg query ";
+    private static final String REGQUERY_UTIL = "reg query ";
     private static final String REGDWORD_TOKEN = "REG_DWORD";
     private static final String DARK_THEME_CMD = REGQUERY_UTIL + "\"HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize\"" + " /v AppsUseLightTheme";
 
-    public static final boolean isDarkMode() {
-        switch(getOperatingSystem()) {
-            case WINDOWS: return isWindowsDarkMode();
-            case MACOS  : return isMacOsDarkMode();
-            case LINUX  : return isGnome() && isGnomeDarkMode();
+    public static boolean isDarkMode() {
+        switch (getOperatingSystem()) {
+            case WINDOWS:
+                return isWindowsDarkMode();
+            case MACOS:
+                return isMacOsDarkMode();
+            case LINUX:
+                return isGnome() && isGnomeDarkMode();
             case SOLARIS: // Solaris is screwed so we'll just return false.
-            default     : return false;
+            default:
+                return false;
         }
     }
 
-    public static final boolean isMacOsDarkMode() {
-        boolean           isDarkMode = false;
+    public static boolean isMacOsDarkMode() {
+        boolean isDarkMode = false;
         String line = query("defaults read -g AppleInterfaceStyle");
-        if (line.equals("Dark")) { isDarkMode = true; }
+        if (line.equals("Dark")) {
+            isDarkMode = true;
+        }
         return isDarkMode;
     }
 
     public static boolean isWindowsDarkMode() {
         try {
-            Process      process = Runtime.getRuntime().exec(DARK_THEME_CMD);
-            StreamReader reader  = new StreamReader(process.getInputStream());
-
-            reader.start();
-            process.waitFor();
-            reader.join();
-
-            String result = reader.getResult();
+            String result = query(DARK_THEME_CMD);
             int p = result.indexOf(REGDWORD_TOKEN);
 
-            if (p == -1) { return false; }
+            if (p == -1) {
+                return false;
+            }
 
             // 1 == Light Mode, 0 == Dark Mode
             String temp = result.substring(p + REGDWORD_TOKEN.length()).trim();
             return ((Integer.parseInt(temp.substring("0x".length()), 16))) == 0;
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             return false;
         }
     }
@@ -62,7 +59,7 @@ public class DarkModeDetector {
         return darkThemeNamePattern.matcher(query("gsettings get org.gnome.desktop.interface gtk-theme")).matches();
     }
 
-    public static final OperatingSystem getOperatingSystem() {
+    public static OperatingSystem getOperatingSystem() {
         String os = System.getProperty("os.name").toLowerCase();
         if (os.contains("win")) {
             return OperatingSystem.WINDOWS;
@@ -108,27 +105,5 @@ public class DarkModeDetector {
             e.printStackTrace();
             return "";
         }
-    }
-
-
-    // ******************** Internal Classes **********************************
-    static class StreamReader extends Thread {
-        private InputStream  is;
-        private StringWriter sw;
-
-        StreamReader(InputStream is) {
-            this.is = is;
-            sw = new StringWriter();
-        }
-
-        public void run() {
-            try {
-                int c;
-                while ((c = is.read()) != -1)
-                    sw.write(c);
-            } catch (IOException e) { ; }
-        }
-
-        String getResult() { return sw.toString(); }
     }
 }
