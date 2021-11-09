@@ -21,7 +21,7 @@ public class DarkModeDetector {
             case WINDOWS: return isWindowsDarkMode();
             case MACOS  : return isMacOsDarkMode();
             case LINUX  : return isGnome() && isGnomeDarkMode();
-            case SOLARIS:
+            case SOLARIS: // Solaris is screwed so we'll just return false.
             default     : return false;
         }
     }
