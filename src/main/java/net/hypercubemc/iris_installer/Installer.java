@@ -55,9 +55,9 @@ public class Installer {
         boolean dark = DarkModeDetector.isDarkMode();
         System.setProperty("apple.awt.application.appearance", "system");
         if (dark) {
-            FlatDarkLaf.install();
+            FlatDarkLaf.setup();
         } else {
-            FlatLightLaf.install();
+            FlatLightLaf.setup();
         }
 
         Main.LOADER_META = new MetaHandler(Reference.getMetaServerEndpoint("v2/versions/loader"));
