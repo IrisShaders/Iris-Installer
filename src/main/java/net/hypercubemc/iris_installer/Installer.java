@@ -366,7 +366,7 @@ public class Installer {
         } catch (Exception e) {
             System.err.println("Failed to check for updates!");
             e.printStackTrace();
-            invalidVersionError(frame, "Update check failed", "Unable to check for installer updates. The installation may fail, you should try downloading it again.", true);
+            invalidVersionError(frame, "Update check failed", "Unable to check for installer updates. The installation may fail, you should try downloading the installer again.", true);
         }
 
         frame.setVisible(true);
