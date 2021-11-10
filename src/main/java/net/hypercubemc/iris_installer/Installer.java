@@ -208,7 +208,7 @@ public class Installer {
             try {
                 URL loaderVersionUrl = new URL("https://raw.githubusercontent.com/IrisShaders/Iris-Installer-Maven/master/latest-loader");
                 String loaderVersion = installAsMod ? Main.LOADER_META.getLatestVersion(false).getVersion() : Utils.readTextFile(loaderVersionUrl);
-                boolean success = VanillaLauncherIntegration.installToLauncher(getVanillaGameDir(), getInstallDir(), installAsMod ? "Fabric Loader " + selectedVersion : selectedEditionDisplayName, selectedVersion, loaderName, loaderVersion, installAsMod ? VanillaLauncherIntegration.Icon.FABRIC: VanillaLauncherIntegration.Icon.IRIS);
+                boolean success = VanillaLauncherIntegration.installToLauncher(getVanillaGameDir(), getInstallDir(), installAsMod ? "Fabric Loader " + selectedVersion : selectedEditionDisplayName + " for " + selectedVersion, selectedVersion, loaderName, loaderVersion, installAsMod ? VanillaLauncherIntegration.Icon.FABRIC: VanillaLauncherIntegration.Icon.IRIS);
                 if (!success) {
                     System.out.println("Failed to install to launcher, canceling!");
                     return;
@@ -262,7 +262,7 @@ public class Installer {
                     File installDir = getInstallDir().toFile();
                     if (!installDir.exists() || !installDir.isDirectory()) installDir.mkdir();
 
-                    File modsFolder = getInstallDir().resolve(installAsMod ? "mods" : "iris-reserved").toFile();
+                    File modsFolder = installAsMod ? getInstallDir().resolve("mods").toFile() : getInstallDir().resolve("iris-reserved").resolve(selectedVersion).toFile();
                     File[] modsFolderContents = modsFolder.listFiles();
 
                     if (modsFolderContents != null) {
@@ -410,7 +410,7 @@ public class Installer {
                 String entryName = entry.getName();
 
                 if (!installAsMod && entryName.startsWith("mods/")) {
-                    entryName = entryName.replace("mods/", "iris-reserved/");
+                    entryName = entryName.replace("mods/", "iris-reserved/" + selectedVersion + "/");
                 }
 
                 File filePath = getInstallDir().resolve(entryName).toFile();
