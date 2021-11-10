@@ -6,6 +6,7 @@ import net.fabricmc.installer.util.MetaHandler;
 import net.fabricmc.installer.util.Reference;
 import net.fabricmc.installer.util.Utils;
 import net.hypercubemc.iris_installer.layouts.VerticalLayout;
+import mjson.Json;
 import org.json.JSONException;
 
 import javax.net.ssl.HttpsURLConnection;
@@ -13,6 +14,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ItemEvent;
 import java.io.*;
+import java.net.URI;
 import java.net.URL;
 import java.nio.file.Path;
 import java.util.*;
@@ -22,6 +24,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 public class Installer {
+    private static final int BREAKING_VERSION_NUMBER = 1;
     InstallerMeta INSTALLER_META;
     List<InstallerMeta.Edition> EDITIONS;
     List<String> GAME_VERSIONS;
@@ -353,10 +356,46 @@ public class Installer {
 
         frame.getContentPane().add(topPanel, BorderLayout.NORTH);
         frame.getContentPane().add(bottomPanel, BorderLayout.SOUTH);
+        
+        try {
+            Json versionInfo = Json.read(new URL("https://raw.githubusercontent.com/IrisShaders/Iris-Installer-Maven/master/installer-versions.json"));
+            if (versionInfo.asJsonMap().get("lastBreakingId").asInteger() > BREAKING_VERSION_NUMBER) {
+                invalidVersionError(frame, "Outdated Installer", "You are running an outdated Iris Installer version that can no longer install Iris.", false);
+                System.exit(0);
+            }
+        } catch (Exception e) {
+            System.err.println("Failed to check for updates!");
+            e.printStackTrace();
+            invalidVersionError(frame, "Update check failed", "Unable to check for installer updates. The installation may fail, you should try downloading it again.", true);
+        }
 
         frame.setVisible(true);
 
         System.out.println("Launched!");
+    }
+
+    private void invalidVersionError(JFrame frame, String title, String message, boolean allowContinue) {
+        int messageType = allowContinue ? JOptionPane.WARNING_MESSAGE : JOptionPane.ERROR_MESSAGE;
+        int result = JOptionPane.showConfirmDialog(frame, message
+                + "\nDo you want to open the Iris website to get the latest version?", title,
+                JOptionPane.OK_CANCEL_OPTION, messageType);
+        if (result == -1) { // User pressed escape or X button in the corner
+            System.exit(0);
+        }
+        if (result == 0) {
+            System.out.println("Opening browser...");
+            try {
+                Desktop.getDesktop().browse(new URI("https://irisshaders.net/download"));
+            } catch (Exception e2) { // Should never happen, but let's handle it, why not, just in case
+                JOptionPane.showMessageDialog(frame, "errrrr... This is ankward... Browser didn't launch. "
+                        + "\nGo to https://irisshaders.net/download to get the latest installer", "Failed to open browser", JOptionPane.ERROR_MESSAGE);
+                e2.printStackTrace();
+            }
+            System.exit(0);
+        }
+        if (!allowContinue) {
+            System.exit(0);
+        }
     }
 
     // Works up to 2GB because of long limitation
