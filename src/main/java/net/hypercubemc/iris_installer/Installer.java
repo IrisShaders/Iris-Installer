@@ -81,7 +81,7 @@ public class Installer {
         } catch (JSONException e) {
             System.out.println("Failed to fetch installer metadata from the server!");
             e.printStackTrace();
-            JOptionPane.showMessageDialog(null, "Installer metadata parsing failed, please contact Justsnoopy30! \nError: " + e, "Metadata Parsing Failed!", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(null, "Installer metadata parsing failed, please contact the Iris support team via Discord! \nError: " + e, "Metadata Parsing Failed!", JOptionPane.ERROR_MESSAGE);
             return;
         }
 
@@ -216,7 +216,7 @@ public class Installer {
             } catch (IOException e) {
                 System.out.println("Failed to install version and profile to vanilla launcher!");
                 e.printStackTrace();
-                JOptionPane.showMessageDialog(frame, "Failed to install to vanilla launcher, please contact Justsnoopy30! \nError: " + e, "Failed to install to launcher", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(frame, "Failed to install to vanilla launcher, please contact the Iris support team via Discord! \nError: " + e, "Failed to install to launcher", JOptionPane.ERROR_MESSAGE);
                 return;
             }
 
