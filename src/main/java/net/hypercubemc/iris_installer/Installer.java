@@ -175,7 +175,7 @@ public class Installer {
         installDirectoryPanel.add(installDirectoryPicker);
 
         installAsModCheckbox = new JCheckBox("Install as Fabric Mod", false);
-        installAsModCheckbox.setToolTipText("If this box is checked, Iris will be installed to your mods \n folder," +
+        installAsModCheckbox.setToolTipText("If this box is checked, Iris will be installed to your mods \n folder, " +
                         "allowing you to use Iris with other Fabric mods!");
         installAsModCheckbox.setHorizontalTextPosition(SwingConstants.LEFT);
         installAsModCheckbox.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -406,12 +406,16 @@ public class Installer {
 
             ZipEntry entry = zipIn.getNextEntry();
             // iterates over entries in the zip file
+            if (!installAsMod) {
+                getInstallDir().resolve("iris-reserved/").toFile().mkdir();
+            }
             while (entry != null) {
                 String entryName = entry.getName();
 
                 if (!installAsMod && entryName.startsWith("mods/")) {
                     entryName = entryName.replace("mods/", "iris-reserved/" + selectedVersion + "/");
                 }
+
 
                 File filePath = getInstallDir().resolve(entryName).toFile();
                 if (!entry.isDirectory()) {
@@ -433,7 +437,7 @@ public class Installer {
             zipIn.close();
             return true;
         } catch (IOException e) {
-            e.getCause().printStackTrace();
+            e.printStackTrace();
             return false;
         }
     }
