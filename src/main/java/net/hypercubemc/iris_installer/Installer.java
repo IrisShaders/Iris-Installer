@@ -25,10 +25,11 @@ import java.util.zip.ZipInputStream;
 
 public class Installer {
     private static final int BREAKING_VERSION_NUMBER = 1;
+    public static final String BASE_FILES_URL = "https://raw.githubusercontent.com/IrisShaders/Iris-Installer-Files/master/";
+    public static final String BASE_MAVEN_URL = "https://raw.githubusercontent.com/IrisShaders/Iris-Installer-Maven/master/";
     InstallerMeta INSTALLER_META;
     List<InstallerMeta.Edition> EDITIONS;
     List<String> GAME_VERSIONS;
-    String BASE_URL = "https://raw.githubusercontent.com/IrisShaders/Iris-Installer-Files/master/";
 
     String selectedEditionName;
     String selectedEditionDisplayName;
@@ -73,7 +74,7 @@ public class Installer {
             return;
         }
 
-        INSTALLER_META = new InstallerMeta(BASE_URL + "meta.json");
+        INSTALLER_META = new InstallerMeta(BASE_FILES_URL + "meta.json");
         try {
             INSTALLER_META.load();
         } catch (IOException e) {
@@ -209,7 +210,7 @@ public class Installer {
             String loaderName = installAsMod ? "fabric-loader" : "iris-fabric-loader";
 
             try {
-                URL loaderVersionUrl = new URL("https://raw.githubusercontent.com/IrisShaders/Iris-Installer-Maven/master/latest-loader");
+                URL loaderVersionUrl = new URL(BASE_MAVEN_URL + "latest-loader");
                 String loaderVersion = installAsMod ? Main.LOADER_META.getLatestVersion(false).getVersion() : Utils.readTextFile(loaderVersionUrl);
                 boolean success = VanillaLauncherIntegration.installToLauncher(getVanillaGameDir(), getInstallDir(), installAsMod ? "Fabric Loader " + selectedVersion : selectedEditionDisplayName, selectedVersion, loaderName, loaderVersion, installAsMod ? VanillaLauncherIntegration.Icon.FABRIC: VanillaLauncherIntegration.Icon.IRIS);
                 if (!success) {
@@ -358,7 +359,7 @@ public class Installer {
         frame.getContentPane().add(bottomPanel, BorderLayout.SOUTH);
         
         try {
-            Json versionInfo = Json.read(new URL("https://raw.githubusercontent.com/IrisShaders/Iris-Installer-Maven/master/installer-versions.json"));
+            Json versionInfo = Json.read(new URL(BASE_MAVEN_URL + "installer-versions.json"));
             if (versionInfo.asJsonMap().get("lastBreakingId").asInteger() > BREAKING_VERSION_NUMBER) {
                 invalidVersionError(frame, "Outdated Installer", "You are running an outdated Iris Installer version that can no longer install Iris.", false);
                 System.exit(0);
