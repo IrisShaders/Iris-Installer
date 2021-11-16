@@ -367,7 +367,7 @@ public class Installer {
         } catch (Exception e) {
             System.err.println("Failed to check for updates!");
             e.printStackTrace();
-            invalidVersionError(frame, "Update check failed", "Unable to check for installer updates. The installation may fail, you should try downloading it again.", true);
+            invalidVersionError(frame, "Update check failed", "Unable to check for installer updates. The installation may fail, you should try downloading the installer again.", true);
         }
 
         frame.setVisible(true);
@@ -388,7 +388,7 @@ public class Installer {
             try {
                 Desktop.getDesktop().browse(new URI("https://irisshaders.net/download"));
             } catch (Exception e2) { // Should never happen, but let's handle it, why not, just in case
-                JOptionPane.showMessageDialog(frame, "errrrr... This is ankward... Browser didn't launch. "
+                JOptionPane.showMessageDialog(frame, "errrrr... This is awkward... Browser didn't launch. "
                         + "\nGo to https://irisshaders.net/download to get the latest installer", "Failed to open browser", JOptionPane.ERROR_MESSAGE);
                 e2.printStackTrace();
             }
