@@ -64,13 +64,34 @@ public class Installer {
             FlatLightLaf.setup();
         }
 
+        JFrame frame = new JFrame("Iris Installer");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setLayout(new BorderLayout());
+        frame.setSize(350,350);
+        frame.setLocationRelativeTo(null); // Centers the window
+        frame.setIconImage(new ImageIcon(Objects.requireNonNull(Utils.class.getClassLoader().getResource("iris_profile_icon.png"))).getImage());
+
+        // Update check
+        try {
+            Json versionInfo = Json.read(new URL(BASE_MAVEN_URL + "installer-versions.json"));
+            if (versionInfo.asJsonMap().get("lastBreakingId").asInteger() > BREAKING_VERSION_NUMBER) {
+                System.out.println("Installer is outdated, aborting...");
+                invalidVersionError(frame, "Outdated Installer", "You are running an outdated Iris Installer version that can no longer install Iris.", false);
+                System.exit(0);
+            }
+        } catch (Exception e) {
+            System.err.println("Failed to check for updates!");
+            e.printStackTrace();
+            invalidVersionError(frame, "Update check failed", "Unable to check for installer updates. The installation may fail, you should try downloading the installer again.", true);
+        }
+
         Main.LOADER_META = new MetaHandler(Reference.getMetaServerEndpoint("v2/versions/loader"));
         try {
             Main.LOADER_META.load();
         } catch (Exception e) {
             System.out.println("Failed to fetch fabric version info from the server!");
             e.printStackTrace();
-            JOptionPane.showMessageDialog(null, "The installer was unable to fetch fabric version info from the server, please check your internet connection and try again later.", "Please check your internet connection!", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(frame, "The installer was unable to fetch fabric version info from the server, please check your internet connection and try again later.", "Please check your internet connection!", JOptionPane.ERROR_MESSAGE);
             return;
         }
 
@@ -80,7 +101,7 @@ public class Installer {
         } catch (IOException e) {
             System.out.println("Failed to fetch installer metadata from the server!");
             e.printStackTrace();
-            JOptionPane.showMessageDialog(null, "The installer was unable to fetch metadata from the server, please check your internet connection and try again later.", "Please check your internet connection!", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(frame, "The installer was unable to fetch metadata from the server, please check your internet connection and try again later.", "Please check your internet connection!", JOptionPane.ERROR_MESSAGE);
             return;
         } catch (JSONException e) {
             System.out.println("Failed to fetch installer metadata from the server!");
@@ -91,13 +112,6 @@ public class Installer {
 
         GAME_VERSIONS = INSTALLER_META.getGameVersions();
         EDITIONS = INSTALLER_META.getEditions();
-
-        JFrame frame = new JFrame("Iris Installer");
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setLayout(new BorderLayout());
-        frame.setSize(350,350);
-        frame.setLocationRelativeTo(null); // Centers the window
-        frame.setIconImage(new ImageIcon(Objects.requireNonNull(Utils.class.getClassLoader().getResource("iris_profile_icon.png"))).getImage());
 
         JPanel topPanel = new JPanel(new VerticalLayout());
 
@@ -357,26 +371,14 @@ public class Installer {
 
         frame.getContentPane().add(topPanel, BorderLayout.NORTH);
         frame.getContentPane().add(bottomPanel, BorderLayout.SOUTH);
-        
-        try {
-            Json versionInfo = Json.read(new URL(BASE_MAVEN_URL + "installer-versions.json"));
-            if (versionInfo.asJsonMap().get("lastBreakingId").asInteger() > BREAKING_VERSION_NUMBER) {
-                invalidVersionError(frame, "Outdated Installer", "You are running an outdated Iris Installer version that can no longer install Iris.", false);
-                System.exit(0);
-            }
-        } catch (Exception e) {
-            System.err.println("Failed to check for updates!");
-            e.printStackTrace();
-            invalidVersionError(frame, "Update check failed", "Unable to check for installer updates. The installation may fail, you should try downloading the installer again.", true);
-        }
 
         frame.setVisible(true);
 
         System.out.println("Launched!");
     }
 
-    private void invalidVersionError(JFrame frame, String title, String message, boolean allowContinue) {
-        int messageType = allowContinue ? JOptionPane.WARNING_MESSAGE : JOptionPane.ERROR_MESSAGE;
+    private void invalidVersionError(JFrame frame, String title, String message, boolean useWarningStyle) {
+        int messageType = useWarningStyle ? JOptionPane.WARNING_MESSAGE : JOptionPane.ERROR_MESSAGE;
         int result = JOptionPane.showConfirmDialog(frame, message
                 + "\nDo you want to open the Iris website to get the latest version?", title,
                 JOptionPane.OK_CANCEL_OPTION, messageType);
@@ -387,14 +389,11 @@ public class Installer {
             System.out.println("Opening browser...");
             try {
                 Desktop.getDesktop().browse(new URI("https://irisshaders.net/download"));
-            } catch (Exception e2) { // Should never happen, but let's handle it, why not, just in case
+            } catch (Exception e) { // Should never happen, but let's handle it, why not, just in case
+                e.printStackTrace();
                 JOptionPane.showMessageDialog(frame, "errrrr... This is awkward... Browser didn't launch. "
                         + "\nGo to https://irisshaders.net/download to get the latest installer", "Failed to open browser", JOptionPane.ERROR_MESSAGE);
-                e2.printStackTrace();
             }
-            System.exit(0);
-        }
-        if (!allowContinue) {
             System.exit(0);
         }
     }
