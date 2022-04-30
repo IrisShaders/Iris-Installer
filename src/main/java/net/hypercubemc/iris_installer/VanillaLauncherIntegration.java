@@ -2,14 +2,14 @@ package net.hypercubemc.iris_installer;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.quiltmc.installer.Gsons;
 import org.quiltmc.installer.LaunchJson;
 import org.quiltmc.installer.LauncherProfiles;
 import org.quiltmc.installer.QuiltMeta;
-import org.quiltmc.installer.lib.json5.JsonReader;
-import org.quiltmc.installer.lib.json5.JsonWriter;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
@@ -38,12 +38,12 @@ public class VanillaLauncherIntegration {
         }
         String versionId = String.format("%s-%s-%s", loaderName, loaderVersion, gameVersion);
 
-        installVersion(vanillaGameDir, gameVersion, loaderName, loaderVersion.get());
+        installVersion(vanillaGameDir, gameVersion, loaderName, loaderVersion.get(), icon);
         installProfile(vanillaGameDir, instanceDir, profileName, versionId, icon);
         return true;
     }
 
-    public static void installVersion(Path mcDir, String gameVersion, String loaderName, String loaderVersion) throws IOException {
+    public static void installVersion(Path mcDir, String gameVersion, String loaderName, String loaderVersion, Icon icon) throws IOException {
         System.out.println("Installing " + gameVersion + " with quilt " + loaderVersion + " to launcher");
         String versionId = String.format("%s-%s-%s", loaderName, loaderVersion, gameVersion);
         Path versionsDir = mcDir.resolve("versions");
@@ -58,26 +58,25 @@ public class VanillaLauncherIntegration {
         Files.deleteIfExists(profileJsonPath);
         Files.createFile(dummyJar);
         CompletableFuture<String> json = LaunchJson.get(gameVersion, loaderVersion, "/v3/versions/loader/%s/%s/profile/json");
-        AtomicReference<String> finalJson;
-        try {
-            String json2 = json.get();
-            JSONObject object = new JSONObject(json2);
-            JSONObject object2 = object.has("arguments") ? object.getJSONObject("arguments") : new JSONObject();
-            JSONArray array = object2.has("jvm") ? object2.getJSONArray("jvm") : new JSONArray();
-            object.put("id", versionId);
-            array.put("-Dloader.modsDir=iris-reserved/" + gameVersion);
-            object2.put("jvm", array);
-            object.put("arguments", object2);
-            try (Writer writer = new OutputStreamWriter(Files.newOutputStream(profileJsonPath, StandardOpenOption.CREATE_NEW))) {
-                object.write(writer);
-            } catch (IOException e) {
+            try {
+                String json2 = json.get();
+                JSONObject object = new JSONObject(json2);
+                object.put("id", versionId);
+                if (icon == Icon.IRIS) {
+                    JSONObject object2 = object.has("arguments") ? object.getJSONObject("arguments") : new JSONObject();
+                    JSONArray array = object2.has("jvm") ? object2.getJSONArray("jvm") : new JSONArray();
+                    array.put("-Dloader.modsDir=iris-reserved/" + gameVersion);
+                    object2.put("jvm", array);
+                    object.put("arguments", object2);
+                }
+                try (Writer writer = new OutputStreamWriter(Files.newOutputStream(profileJsonPath, StandardOpenOption.CREATE_NEW))) {
+                    object.write(writer);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            } catch (InterruptedException | ExecutionException e) {
                 throw new RuntimeException(e);
             }
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        } catch (ExecutionException e) {
-            throw new RuntimeException(e);
-        }
     }
 
     private static void installProfile(Path mcDir, Path instanceDir, String profileName, String versionId, Icon icon) throws IOException {
@@ -98,7 +97,7 @@ public class VanillaLauncherIntegration {
         if (profiles.has(profileName)) {
             JSONObject rawProfile = profiles.getJSONObject(profileName);
 
-            rawProfile.put("lastVersionId", profileName);
+            rawProfile.put("lastVersionId", versionId);
 
             profiles.put(profileName, rawProfile);
         } else {
@@ -146,7 +145,7 @@ public class VanillaLauncherIntegration {
                 int offset = 0;
 
                 int len;
-                while((len = is.read(ret, offset, ret.length - offset)) != -1) {
+                while ((len = is.read(ret, offset, ret.length - offset)) != -1) {
                     offset += len;
                     if (offset == ret.length) {
                         ret = Arrays.copyOf(ret, ret.length * 2);

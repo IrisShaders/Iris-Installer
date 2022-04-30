@@ -192,7 +192,6 @@ public class Installer {
             String loaderName = installAsMod ? "quilt-loader" : "iris-quilt-loader";
 
             try {
-                URL loaderVersionUrl = new URL("https://raw.githubusercontent.com/IrisShaders/Iris-Installer-Maven/master/latest-loader");
                 boolean success = VanillaLauncherIntegration.installToLauncher(getVanillaGameDir(), getInstallDir(), installAsMod ? "Quilt Loader " + selectedVersion : selectedEditionDisplayName + " for " + selectedVersion, selectedVersion, loaderName, installAsMod ? VanillaLauncherIntegration.Icon.QUILT : VanillaLauncherIntegration.Icon.IRIS);
                 if (!success) {
                     System.out.println("Failed to install to launcher, canceling!");
