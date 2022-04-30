@@ -1,10 +1,6 @@
 package net.hypercubemc.iris_installer;
 import com.formdev.flatlaf.FlatDarkLaf;
 import com.formdev.flatlaf.FlatLightLaf;
-import net.fabricmc.installer.Main;
-import net.fabricmc.installer.util.MetaHandler;
-import net.fabricmc.installer.util.Reference;
-import net.fabricmc.installer.util.Utils;
 import net.hypercubemc.iris_installer.layouts.VerticalLayout;
 import org.json.JSONException;
 
@@ -60,16 +56,6 @@ public class Installer {
             FlatLightLaf.setup();
         }
 
-        Main.LOADER_META = new MetaHandler(Reference.getMetaServerEndpoint("v2/versions/loader"));
-        try {
-            Main.LOADER_META.load();
-        } catch (Exception e) {
-            System.out.println("Failed to fetch fabric version info from the server!");
-            e.printStackTrace();
-            JOptionPane.showMessageDialog(null, "The installer was unable to fetch fabric version info from the server, please check your internet connection and try again later.", "Please check your internet connection!", JOptionPane.ERROR_MESSAGE);
-            return;
-        }
-
         INSTALLER_META = new InstallerMeta(BASE_URL + "meta.json");
         try {
             INSTALLER_META.load();
@@ -93,7 +79,7 @@ public class Installer {
         frame.setLayout(new BorderLayout());
         frame.setSize(350,350);
         frame.setLocationRelativeTo(null); // Centers the window
-        frame.setIconImage(new ImageIcon(Objects.requireNonNull(Utils.class.getClassLoader().getResource("iris_profile_icon.png"))).getImage());
+        frame.setIconImage(new ImageIcon(Objects.requireNonNull(Installer.class.getClassLoader().getResource("iris_profile_icon.png"))).getImage());
 
         JPanel topPanel = new JPanel(new VerticalLayout());
 
@@ -174,9 +160,9 @@ public class Installer {
         installDirectoryPanel.add(installDirectoryPickerLabel);
         installDirectoryPanel.add(installDirectoryPicker);
 
-        installAsModCheckbox = new JCheckBox("Install as Fabric Mod", false);
+        installAsModCheckbox = new JCheckBox("Install as Quilt Mod", false);
         installAsModCheckbox.setToolTipText("If this box is checked, Iris will be installed to your mods \n folder, " +
-                        "allowing you to use Iris with other Fabric mods!");
+                        "allowing you to use Iris with other Fabric/Quilt mods!");
         installAsModCheckbox.setHorizontalTextPosition(SwingConstants.LEFT);
         installAsModCheckbox.setAlignmentX(Component.CENTER_ALIGNMENT);
         installAsModCheckbox.addActionListener(e -> {
@@ -203,12 +189,11 @@ public class Installer {
                 return;
             }
 
-            String loaderName = installAsMod ? "fabric-loader" : "iris-fabric-loader";
+            String loaderName = installAsMod ? "quilt-loader" : "iris-quilt-loader";
 
             try {
                 URL loaderVersionUrl = new URL("https://raw.githubusercontent.com/IrisShaders/Iris-Installer-Maven/master/latest-loader");
-                String loaderVersion = installAsMod ? Main.LOADER_META.getLatestVersion(false).getVersion() : Utils.readTextFile(loaderVersionUrl);
-                boolean success = VanillaLauncherIntegration.installToLauncher(getVanillaGameDir(), getInstallDir(), installAsMod ? "Fabric Loader " + selectedVersion : selectedEditionDisplayName + " for " + selectedVersion, selectedVersion, loaderName, loaderVersion, installAsMod ? VanillaLauncherIntegration.Icon.FABRIC: VanillaLauncherIntegration.Icon.IRIS);
+                boolean success = VanillaLauncherIntegration.installToLauncher(getVanillaGameDir(), getInstallDir(), installAsMod ? "Quilt Loader " + selectedVersion : selectedEditionDisplayName + " for " + selectedVersion, selectedVersion, loaderName, installAsMod ? VanillaLauncherIntegration.Icon.QUILT : VanillaLauncherIntegration.Icon.IRIS);
                 if (!success) {
                     System.out.println("Failed to install to launcher, canceling!");
                     return;
