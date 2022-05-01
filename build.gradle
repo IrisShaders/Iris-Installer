@@ -71,6 +71,7 @@ jar {
         attributes("Main-Class": application.mainClass)
     }
 
+    duplicatesStrategy(DuplicatesStrategy.INCLUDE)
     from "LICENSE"
 
     from (configurations.compileClasspath.filter{ it.exists() }.collect { it.isDirectory() ? it : zipTree(it) }) {

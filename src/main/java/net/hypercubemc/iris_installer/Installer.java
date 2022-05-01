@@ -8,7 +8,12 @@ import javax.net.ssl.HttpsURLConnection;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ItemEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.io.*;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Path;
 import java.util.*;
@@ -170,10 +175,44 @@ public class Installer {
             readyAll();
         });
 
+        JLabel whatIsQuilt = new JLabel("What is Quilt?");
+        whatIsQuilt.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent mouseEvent) {
+                try {
+                    if (Desktop.isDesktopSupported()) {
+                        Desktop.getDesktop().browse(new URI("https://quiltmc.org/about/faq/"));
+                    } else {
+                        JOptionPane.showMessageDialog(frame, "Can't open page automatically, please visit https://quiltmc.org/about/faq/ manually.");
+                    }
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                } catch (URISyntaxException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                super.mouseEntered(e);
+                whatIsQuilt.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                super.mouseExited(e);
+                whatIsQuilt.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+            }
+        });
+        whatIsQuilt.setAlignmentX(Component.CENTER_ALIGNMENT);
+        whatIsQuilt.setForeground(dark ? Color.CYAN.darker() : Color.BLUE);
+        //whatIsQuilt.setForeground(Component.CENTER_ALIGNMENT);
+
         topPanel.add(editionPanel);
         topPanel.add(versionPanel);
         topPanel.add(installDirectoryPanel);
         topPanel.add(installAsModCheckbox);
+        topPanel.add(whatIsQuilt);
 
         JPanel bottomPanel = new JPanel();
 
