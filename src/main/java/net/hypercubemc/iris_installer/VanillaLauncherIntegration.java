@@ -31,9 +31,7 @@ public class VanillaLauncherIntegration {
         CompletableFuture<QuiltMeta> metaFuture = QuiltMeta.create("https://meta.quiltmc.org", "https://meta.fabricmc.net", endpoints);
         try {
             loaderVersion.set(metaFuture.get().getEndpoint(QuiltMeta.LOADER_VERSIONS_ENDPOINT).get(0));
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        } catch (ExecutionException e) {
+        } catch (InterruptedException | ExecutionException e) {
             throw new RuntimeException(e);
         }
         String versionId = String.format("%s-%s-%s", loaderName, loaderVersion, gameVersion);

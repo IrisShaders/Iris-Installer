@@ -176,18 +176,17 @@ public class Installer {
         });
 
         JLabel whatIsQuilt = new JLabel("What is Quilt?");
+        whatIsQuilt.setToolTipText("Quilt is a new mod loader designed to load Fabric mods.\nClick for more information.");
         whatIsQuilt.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent mouseEvent) {
                 try {
                     if (Desktop.isDesktopSupported()) {
-                        Desktop.getDesktop().browse(new URI("https://quiltmc.org/about/faq/"));
+                        Desktop.getDesktop().browse(new URI("https://quiltmc.org/about/newcomer-guide/"));
                     } else {
-                        JOptionPane.showMessageDialog(frame, "Can't open page automatically, please visit https://quiltmc.org/about/faq/ manually.");
+                        JOptionPane.showMessageDialog(frame, "Can't open page automatically, please visit https://quiltmc.org/about/newcomer-guide/ manually.");
                     }
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                } catch (URISyntaxException e) {
+                } catch (IOException | URISyntaxException e) {
                     throw new RuntimeException(e);
                 }
             }
