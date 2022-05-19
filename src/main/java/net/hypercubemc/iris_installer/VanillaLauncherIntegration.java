@@ -64,6 +64,9 @@ public class VanillaLauncherIntegration {
                 entry.asJsonMap().put("url", factory.string("https://raw.githubusercontent.com/IrisShaders/Iris-Installer-Maven/master/"));
             }
         }
+
+        // Add the JVM argument -Diris.installer=true so Iris can detect if the installer is used
+        json.getOrDefault("arguments", Json.array()).asJsonMap().getOrDefault("jvm", Json.array()).asJsonList().add(factory.string("-Diris.installer=true"));
     }
 
     private static void installProfile(Path mcDir, Path instanceDir, String profileName, String versionId, Icon icon, ProfileInstaller.LauncherType launcherType) throws IOException {
