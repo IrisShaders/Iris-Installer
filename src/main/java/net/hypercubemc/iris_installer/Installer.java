@@ -6,6 +6,7 @@ import net.fabricmc.installer.util.MetaHandler;
 import net.fabricmc.installer.util.Reference;
 import net.fabricmc.installer.util.Utils;
 import net.hypercubemc.iris_installer.layouts.VerticalLayout;
+import mjson.Json;
 import org.json.JSONException;
 
 import javax.net.ssl.HttpsURLConnection;
@@ -13,6 +14,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ItemEvent;
 import java.io.*;
+import java.net.URI;
 import java.net.URL;
 import java.nio.file.Path;
 import java.util.*;
@@ -22,10 +24,12 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 public class Installer {
+    private static final int BREAKING_VERSION_NUMBER = 1;
+    public static final String BASE_FILES_URL = "https://raw.githubusercontent.com/IrisShaders/Iris-Installer-Files/master/";
+    public static final String BASE_MAVEN_URL = "https://raw.githubusercontent.com/IrisShaders/Iris-Installer-Maven/master/";
     InstallerMeta INSTALLER_META;
     List<InstallerMeta.Edition> EDITIONS;
     List<String> GAME_VERSIONS;
-    String BASE_URL = "https://raw.githubusercontent.com/IrisShaders/Iris-Installer-Files/master/";
 
     String selectedEditionName;
     String selectedEditionDisplayName;
@@ -60,23 +64,44 @@ public class Installer {
             FlatLightLaf.setup();
         }
 
+        JFrame frame = new JFrame("Iris Installer");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setLayout(new BorderLayout());
+        frame.setSize(350,350);
+        frame.setLocationRelativeTo(null); // Centers the window
+        frame.setIconImage(new ImageIcon(Objects.requireNonNull(Utils.class.getClassLoader().getResource("iris_profile_icon.png"))).getImage());
+
+        // Update check
+        try {
+            Json versionInfo = Json.read(new URL(BASE_MAVEN_URL + "installer-versions.json"));
+            if (versionInfo.asJsonMap().get("lastBreakingId").asInteger() > BREAKING_VERSION_NUMBER) {
+                System.out.println("Installer is outdated, aborting...");
+                invalidVersionError(frame, "Outdated Installer", "You are running an outdated Iris Installer version that can no longer install Iris.", false);
+                System.exit(0);
+            }
+        } catch (Exception e) {
+            System.err.println("Failed to check for updates!");
+            e.printStackTrace();
+            invalidVersionError(frame, "Update check failed", "Unable to check for installer updates. The installation may fail, you should try downloading the installer again.", true);
+        }
+
         Main.LOADER_META = new MetaHandler(Reference.getMetaServerEndpoint("v2/versions/loader"));
         try {
             Main.LOADER_META.load();
         } catch (Exception e) {
             System.out.println("Failed to fetch fabric version info from the server!");
             e.printStackTrace();
-            JOptionPane.showMessageDialog(null, "The installer was unable to fetch fabric version info from the server, please check your internet connection and try again later.", "Please check your internet connection!", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(frame, "The installer was unable to fetch fabric version info from the server, please check your internet connection and try again later.", "Please check your internet connection!", JOptionPane.ERROR_MESSAGE);
             return;
         }
 
-        INSTALLER_META = new InstallerMeta(BASE_URL + "meta.json");
+        INSTALLER_META = new InstallerMeta(BASE_FILES_URL + "meta.json");
         try {
             INSTALLER_META.load();
         } catch (IOException e) {
             System.out.println("Failed to fetch installer metadata from the server!");
             e.printStackTrace();
-            JOptionPane.showMessageDialog(null, "The installer was unable to fetch metadata from the server, please check your internet connection and try again later.", "Please check your internet connection!", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(frame, "The installer was unable to fetch metadata from the server, please check your internet connection and try again later.", "Please check your internet connection!", JOptionPane.ERROR_MESSAGE);
             return;
         } catch (JSONException e) {
             System.out.println("Failed to fetch installer metadata from the server!");
@@ -87,13 +112,6 @@ public class Installer {
 
         GAME_VERSIONS = INSTALLER_META.getGameVersions();
         EDITIONS = INSTALLER_META.getEditions();
-
-        JFrame frame = new JFrame("Iris Installer");
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setLayout(new BorderLayout());
-        frame.setSize(350,350);
-        frame.setLocationRelativeTo(null); // Centers the window
-        frame.setIconImage(new ImageIcon(Objects.requireNonNull(Utils.class.getClassLoader().getResource("iris_profile_icon.png"))).getImage());
 
         JPanel topPanel = new JPanel(new VerticalLayout());
 
@@ -206,7 +224,7 @@ public class Installer {
             String loaderName = installAsMod ? "fabric-loader" : "iris-fabric-loader";
 
             try {
-                URL loaderVersionUrl = new URL("https://raw.githubusercontent.com/IrisShaders/Iris-Installer-Maven/master/latest-loader");
+                URL loaderVersionUrl = new URL(BASE_MAVEN_URL + "latest-loader");
                 String loaderVersion = installAsMod ? Main.LOADER_META.getLatestVersion(false).getVersion() : Utils.readTextFile(loaderVersionUrl);
                 boolean success = VanillaLauncherIntegration.installToLauncher(getVanillaGameDir(), getInstallDir(), installAsMod ? "Fabric Loader " + selectedVersion : selectedEditionDisplayName + " for " + selectedVersion, selectedVersion, loaderName, loaderVersion, installAsMod ? VanillaLauncherIntegration.Icon.FABRIC: VanillaLauncherIntegration.Icon.IRIS);
                 if (!success) {
@@ -357,6 +375,27 @@ public class Installer {
         frame.setVisible(true);
 
         System.out.println("Launched!");
+    }
+
+    private void invalidVersionError(JFrame frame, String title, String message, boolean useWarningStyle) {
+        int messageType = useWarningStyle ? JOptionPane.WARNING_MESSAGE : JOptionPane.ERROR_MESSAGE;
+        int result = JOptionPane.showConfirmDialog(frame, message
+                + "\nDo you want to open the Iris website to get the latest version?", title,
+                JOptionPane.OK_CANCEL_OPTION, messageType);
+        if (result == -1) { // User pressed escape or X button in the corner
+            System.exit(0);
+        }
+        if (result == 0) {
+            System.out.println("Opening browser...");
+            try {
+                Desktop.getDesktop().browse(new URI("https://irisshaders.net/download"));
+            } catch (Exception e) { // Should never happen, but let's handle it, why not, just in case
+                e.printStackTrace();
+                JOptionPane.showMessageDialog(frame, "errrrr... This is awkward... Browser didn't launch. "
+                        + "\nGo to https://irisshaders.net/download to get the latest installer", "Failed to open browser", JOptionPane.ERROR_MESSAGE);
+            }
+            System.exit(0);
+        }
     }
 
     // Works up to 2GB because of long limitation
