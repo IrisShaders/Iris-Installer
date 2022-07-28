@@ -25,7 +25,7 @@ dependencies {
     implementation "org.json:json:20210307"
     implementation "com.formdev:flatlaf:1.6.1"
 
-    implementation "org.quiltmc:quilt-installer:0.4.2"
+    implementation "org.quiltmc:quilt-installer:0.4.3"
 }
 
 application {
