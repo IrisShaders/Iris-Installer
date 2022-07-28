@@ -64,6 +64,7 @@ public class VanillaLauncherIntegration {
                     JSONObject object2 = object.has("arguments") ? object.getJSONObject("arguments") : new JSONObject();
                     JSONArray array = object2.has("jvm") ? object2.getJSONArray("jvm") : new JSONArray();
                     array.put("-Dloader.modsDir=iris-reserved/" + gameVersion);
+                    array.put("-Diris.installer=true");
                     object2.put("jvm", array);
                     object.put("arguments", object2);
                 }
