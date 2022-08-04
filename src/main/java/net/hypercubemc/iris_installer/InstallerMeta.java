@@ -10,12 +10,12 @@ import java.io.Reader;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class InstallerMeta {
     private final String metaUrl;
-    private final List<String> gameVersions = new ArrayList<>();
-    private final List<InstallerMeta.Edition> editions = new ArrayList<>();
+    private final List<InstallerMeta.Version> versions = new ArrayList<>();
 
     public InstallerMeta(String url) {
         this.metaUrl = url;
@@ -23,16 +23,12 @@ public class InstallerMeta {
 
     public void load() throws IOException, JSONException {
         JSONObject json = readJsonFromUrl(this.metaUrl);
-        json.getJSONArray("game_versions").toList().forEach(element -> gameVersions.add(element.toString()));
-        json.getJSONArray("editions").forEach(object -> editions.add(new Edition((JSONObject) object)));
+        json.getJSONArray("versions").toList().forEach(element -> versions.add(new Version((HashMap) element)));
     }
 
-    public List<String> getGameVersions() {
-        return this.gameVersions;
-    }
 
-    public List<InstallerMeta.Edition> getEditions() {
-        return this.editions;
+    public List<InstallerMeta.Version> getVersions() {
+        return this.versions;
     }
 
     public static String readAll(Reader reader) throws IOException {
@@ -41,7 +37,30 @@ public class InstallerMeta {
         while ((codePoint = reader.read()) != -1) {
             stringBuilder.append((char) codePoint);
         }
-        return stringBuilder.toString();
+        return "{\n" +
+                "    \"versions\": [\n" +
+                "        {\n" +
+                "            \"name\": \"1.16.5\",\n" +
+                "            \"outdated\": false\n" +
+                "        },\n" +
+                "        {\n" +
+                "            \"name\": \"1.17.1\",\n" +
+                "            \"outdated\": false\n" +
+                "        },\n" +
+                "        {\n" +
+                "            \"name\": \"1.18.2\",\n" +
+                "            \"outdated\": false\n" +
+                "        },\n" +
+                "        {\n" +
+                "            \"name\": \"1.19\",\n" +
+                "            \"outdated\": true\n" +
+                "        },\n" +
+                "        {\n" +
+                "            \"name\": \"1.19.1\",\n" +
+                "            \"outdated\": false\n" +
+                "        }\n" +
+                "    ]\n" +
+                "}";
     }
 
     public static JSONObject readJsonFromUrl(String url) throws IOException {
@@ -49,22 +68,14 @@ public class InstallerMeta {
         return new JSONObject(readAll(bufferedReader));
     }
 
-    public static class Edition {
+    public static class Version {
+        boolean outdated;
         String name;
-        String displayName;
-        List<String> compatibleVersions = new ArrayList<>();
 
-        public Edition(JSONObject jsonObject) {
-            this.name = jsonObject.getString("name");
-            this.displayName = jsonObject.getString("display_name");
-
-            for (int i = 0; i < jsonObject.getJSONArray("compatible_versions").toList().size(); i++){
-                compatibleVersions.add(jsonObject.getJSONArray("compatible_versions").toList().get(i).toString());
-            }
-        }
-
-        public String getDisplayName() {
-            return displayName;
+        public Version(HashMap<String, Object> jsonObject) {
+            System.out.println(jsonObject.toString());
+            this.name = (String) jsonObject.get("name");
+            this.outdated = (boolean) jsonObject.get("outdated");
         }
     }
 }
