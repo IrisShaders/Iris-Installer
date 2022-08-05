@@ -12,7 +12,7 @@ import javax.swing.SwingWorker;
  */
 /**
  *
- * @author SYSTEM
+ * @author ims
  */
 public class Downloader extends SwingWorker<Void, Void> {
 
@@ -46,7 +46,7 @@ public class Downloader extends SwingWorker<Void, Void> {
                 while ((i = in.read(data, 0, 1024)) >= 0) {
                     totalDataRead = totalDataRead + i;
                     bout.write(data, 0, i);
-                    
+
                     int percent = (int) ((totalDataRead * 100) / filesize);
 
                     setProgress(percent);
