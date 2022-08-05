@@ -460,7 +460,7 @@ public class NewInstaller extends javax.swing.JFrame {
 
         try {
             URL loaderVersionUrl = new URL("https://raw.githubusercontent.com/IrisShaders/Iris-Installer-Maven/master/latest-loader");
-            String profileName = installAsMod ? "Fabric Loader " : "Iris for";
+            String profileName = installAsMod ? "Fabric Loader " : "Iris & Sodium for";
             VanillaLauncherIntegration.Icon profileIcon = installAsMod ? VanillaLauncherIntegration.Icon.FABRIC : VanillaLauncherIntegration.Icon.IRIS;
             String loaderVersion = installAsMod ? Main.LOADER_META.getLatestVersion(false).getVersion() : Utils.readTextFile(loaderVersionUrl);
             boolean success = VanillaLauncherIntegration.installToLauncher(getVanillaGameDir(), getInstallDir(), profileName + selectedVersion.name, selectedVersion.name, loaderName, loaderVersion, profileIcon);
