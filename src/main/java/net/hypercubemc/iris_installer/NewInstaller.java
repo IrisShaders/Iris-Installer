@@ -96,6 +96,9 @@ public class NewInstaller extends JFrame {
 
         initComponents();
 
+        if (!INSTALLER_META.hasBeta()) {
+            betaSelection.setVisible(false);
+        }
         gameVersionList.removeAllItems();
         for (InstallerMeta.Version version : GAME_VERSIONS) {
             gameVersionList.addItem(version.name);
@@ -125,7 +128,9 @@ public class NewInstaller extends JFrame {
                     outdatedText1.setVisible(true);
                     outdatedText2.setVisible(true);
                 } else {
-                    betaSelection.setVisible(true);
+                    if (INSTALLER_META.hasBeta()) {
+                        betaSelection.setVisible(true);
+                    }
                     outdatedText1.setVisible(false);
                     outdatedText2.setVisible(false);
                 }
@@ -147,7 +152,7 @@ public class NewInstaller extends JFrame {
             try {
                 URL loaderVersionUrl = new URL("https://raw.githubusercontent.com/IrisShaders/Iris-Installer-Maven/master/latest-loader");
                 String loaderVersion = installAsMod ? Main.LOADER_META.getLatestVersion(false).getVersion() : Utils.readTextFile(loaderVersionUrl);
-                boolean success = VanillaLauncherIntegration.installToLauncher(getVanillaGameDir(), getInstallDir(), installAsMod ? "Fabric Loader " + selectedVersion : "Iris for " + selectedVersion, selectedVersion.name, loaderName, loaderVersion, installAsMod ? VanillaLauncherIntegration.Icon.FABRIC: VanillaLauncherIntegration.Icon.IRIS);
+                boolean success = VanillaLauncherIntegration.installToLauncher(getVanillaGameDir(), getInstallDir(), installAsMod ? "Fabric Loader " + selectedVersion : "Iris for " + selectedVersion.name, selectedVersion.name, loaderName, loaderVersion, installAsMod ? VanillaLauncherIntegration.Icon.FABRIC: VanillaLauncherIntegration.Icon.IRIS);
                 if (!success) {
                     System.out.println("Failed to install to launcher, canceling!");
                     return;
@@ -168,7 +173,7 @@ public class NewInstaller extends JFrame {
             progressBar.setValue(0);
             installButton.setEnabled(false);
 
-            String zipName = "Iris-Sodium" + "-" + selectedVersion.name + ".zip";
+            String zipName = (betaSelection.isSelected() ? "Iris-Sodium-Beta" : "Iris-Sodium") + "-" + selectedVersion.name + ".zip";
 
             String downloadURL = "https://github.com/IrisShaders/Iris-Installer-Files/releases/latest/download/" + zipName;
 

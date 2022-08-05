@@ -15,6 +15,7 @@ import java.util.List;
 
 public class InstallerMeta {
     private final String metaUrl;
+    private boolean hasBeta;
     private final List<InstallerMeta.Version> versions = new ArrayList<>();
 
     public InstallerMeta(String url) {
@@ -23,9 +24,13 @@ public class InstallerMeta {
 
     public void load() throws IOException, JSONException {
         JSONObject json = readJsonFromUrl(this.metaUrl);
+        hasBeta = json.getBoolean("hasBeta");
         json.getJSONArray("versions").toList().forEach(element -> versions.add(new Version((HashMap) element)));
     }
 
+    public boolean hasBeta() {
+        return hasBeta;
+    }
 
     public List<InstallerMeta.Version> getVersions() {
         return this.versions;
@@ -38,6 +43,7 @@ public class InstallerMeta {
             stringBuilder.append((char) codePoint);
         }
         return "{\n" +
+                "            \"hasBeta\": true,\n" +
                 "    \"versions\": [\n" +
                 "        {\n" +
                 "            \"name\": \"1.16.5\",\n" +
