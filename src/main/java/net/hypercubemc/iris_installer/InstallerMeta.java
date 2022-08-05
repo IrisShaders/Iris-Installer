@@ -42,31 +42,7 @@ public class InstallerMeta {
         while ((codePoint = reader.read()) != -1) {
             stringBuilder.append((char) codePoint);
         }
-        return "{\n" +
-                "            \"hasBeta\": true,\n" +
-                "    \"versions\": [\n" +
-                "        {\n" +
-                "            \"name\": \"1.16.5\",\n" +
-                "            \"outdated\": false\n" +
-                "        },\n" +
-                "        {\n" +
-                "            \"name\": \"1.17.1\",\n" +
-                "            \"outdated\": false\n" +
-                "        },\n" +
-                "        {\n" +
-                "            \"name\": \"1.18.2\",\n" +
-                "            \"outdated\": false\n" +
-                "        },\n" +
-                "        {\n" +
-                "            \"name\": \"1.19\",\n" +
-                "            \"outdated\": true\n" +
-                "        },\n" +
-                "        {\n" +
-                "            \"name\": \"1.19.1\",\n" +
-                "            \"outdated\": false\n" +
-                "        }\n" +
-                "    ]\n" +
-                "}";
+        return stringBuilder.toString();
     }
 
     public static JSONObject readJsonFromUrl(String url) throws IOException {
@@ -79,7 +55,6 @@ public class InstallerMeta {
         String name;
 
         public Version(HashMap<String, Object> jsonObject) {
-            System.out.println(jsonObject.toString());
             this.name = (String) jsonObject.get("name");
             this.outdated = (boolean) jsonObject.get("outdated");
         }

@@ -72,7 +72,7 @@ public class NewInstaller extends JFrame {
             throw new RuntimeException(e);
         }
 
-        INSTALLER_META = new InstallerMeta(BASE_URL + "meta.json");
+        INSTALLER_META = new InstallerMeta(BASE_URL + "meta-new.json");
         try {
             INSTALLER_META.load();
         } catch (IOException e) {
