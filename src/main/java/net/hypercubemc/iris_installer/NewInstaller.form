@@ -7,6 +7,7 @@
   </NonVisualComponents>
   <Properties>
     <Property name="defaultCloseOperation" type="int" value="3"/>
+    <Property name="resizable" type="boolean" value="false"/>
   </Properties>
   <SyntheticProperties>
     <SyntheticProperty name="formSizePolicy" type="int" value="1"/>
@@ -28,35 +29,38 @@
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="1" attributes="0">
-              <EmptySpace min="-2" pref="19" max="-2" attributes="0"/>
-              <Component id="progressBar" max="32767" attributes="0"/>
-              <EmptySpace type="separate" max="-2" attributes="0"/>
-              <Component id="installButton" min="-2" pref="171" max="-2" attributes="0"/>
-              <EmptySpace min="-2" pref="26" max="-2" attributes="0"/>
+              <EmptySpace pref="196" max="32767" attributes="0"/>
+              <Component id="irisInstallerLabel" min="-2" max="-2" attributes="0"/>
+              <EmptySpace min="-2" pref="196" max="-2" attributes="0"/>
           </Group>
           <Group type="102" attributes="0">
-              <EmptySpace min="-2" pref="19" max="-2" attributes="0"/>
+              <EmptySpace min="19" pref="19" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="installationType" min="-2" max="-2" attributes="0"/>
-                  <Component id="betaSelection" min="-2" max="-2" attributes="0"/>
-                  <Component id="outdatedText2" min="-2" max="-2" attributes="0"/>
-                  <Component id="outdatedText1" min="-2" max="-2" attributes="0"/>
-                  <Component id="gameVersionLabel" min="-2" pref="227" max="-2" attributes="0"/>
-                  <Component id="gameVersionList" min="-2" pref="183" max="-2" attributes="0"/>
-                  <Group type="102" alignment="0" attributes="0">
-                      <Component id="standaloneType" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                      <Component id="fabricType" min="-2" max="-2" attributes="0"/>
+                  <Group type="102" alignment="1" attributes="0">
+                      <Component id="progressBar" max="32767" attributes="0"/>
+                      <EmptySpace type="separate" max="-2" attributes="0"/>
+                      <Component id="installButton" min="-2" pref="171" max="-2" attributes="0"/>
+                      <EmptySpace min="-2" pref="26" max="-2" attributes="0"/>
                   </Group>
-                  <Component id="installationDirectory" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="directoryName" alignment="0" min="-2" pref="302" max="-2" attributes="0"/>
+                  <Group type="102" attributes="0">
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="installationType" min="-2" max="-2" attributes="0"/>
+                          <Component id="betaSelection" min="-2" max="-2" attributes="0"/>
+                          <Component id="outdatedText2" min="-2" max="-2" attributes="0"/>
+                          <Component id="outdatedText1" min="-2" max="-2" attributes="0"/>
+                          <Component id="gameVersionLabel" min="-2" pref="227" max="-2" attributes="0"/>
+                          <Component id="gameVersionList" min="-2" pref="183" max="-2" attributes="0"/>
+                          <Group type="102" alignment="0" attributes="0">
+                              <Component id="standaloneType" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                              <Component id="fabricType" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <Component id="installationDirectory" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="directoryName" alignment="0" min="-2" pref="302" max="-2" attributes="0"/>
+                      </Group>
+                      <EmptySpace max="32767" attributes="0"/>
+                  </Group>
               </Group>
-              <EmptySpace pref="242" max="32767" attributes="0"/>
-          </Group>
-          <Group type="102" alignment="0" attributes="0">
-              <EmptySpace min="-2" pref="161" max="-2" attributes="0"/>
-              <Component id="irisInstallerLabel" pref="490" max="32767" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -140,9 +144,6 @@
       </AuxValues>
     </Component>
     <Component class="javax.swing.JProgressBar" name="progressBar">
-      <Properties>
-        <Property name="value" type="int" value="50"/>
-      </Properties>
     </Component>
     <Component class="javax.swing.JLabel" name="gameVersionLabel">
       <Properties>
