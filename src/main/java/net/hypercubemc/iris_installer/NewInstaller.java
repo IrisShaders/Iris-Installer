@@ -86,6 +86,8 @@ public class NewInstaller extends javax.swing.JFrame {
 
         initComponents();
 
+        betaSelection.setText("Use " + INSTALLER_META.getBetaSnippet() + " beta version (not recommended)");
+
         // Change outdated version text color based on dark mode
         if (!dark) {
             Color newTextColor = new Color(154, 136, 63, 255);
@@ -321,6 +323,7 @@ public class NewInstaller extends javax.swing.JFrame {
         standaloneType.setFont(new java.awt.Font("sansserif", 0, 16)); // NOI18N
         standaloneType.setSelected(true);
         standaloneType.setText("Iris Install");
+        standaloneType.setToolTipText("This installs Iris and Sodium by itself, without any mods.");
         standaloneType.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 standaloneTypeMouseClicked(evt);
@@ -331,6 +334,7 @@ public class NewInstaller extends javax.swing.JFrame {
         installType.add(fabricType);
         fabricType.setFont(new java.awt.Font("sansserif", 0, 16)); // NOI18N
         fabricType.setText("Fabric Install");
+        fabricType.setToolTipText("This installs Iris and Sodium alongside an installation of Fabric.");
         fabricType.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 fabricTypeMouseClicked(evt);
@@ -460,7 +464,7 @@ public class NewInstaller extends javax.swing.JFrame {
 
         try {
             URL loaderVersionUrl = new URL("https://raw.githubusercontent.com/IrisShaders/Iris-Installer-Maven/master/latest-loader");
-            String profileName = installAsMod ? "Fabric Loader " : "Iris & Sodium for";
+            String profileName = installAsMod ? "Fabric Loader " : "Iris & Sodium for ";
             VanillaLauncherIntegration.Icon profileIcon = installAsMod ? VanillaLauncherIntegration.Icon.FABRIC : VanillaLauncherIntegration.Icon.IRIS;
             String loaderVersion = installAsMod ? Main.LOADER_META.getLatestVersion(false).getVersion() : Utils.readTextFile(loaderVersionUrl);
             boolean success = VanillaLauncherIntegration.installToLauncher(getVanillaGameDir(), getInstallDir(), profileName + selectedVersion.name, selectedVersion.name, loaderName, loaderVersion, profileIcon);
