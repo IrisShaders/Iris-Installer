@@ -231,11 +231,13 @@ public class NewInstaller extends javax.swing.JFrame {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setIconImage(new ImageIcon(Objects.requireNonNull(Utils.class.getClassLoader().getResource("iris_profile_icon.png"))).getImage());
-        setMaximumSize(new java.awt.Dimension(480, 640));
-        setMinimumSize(new java.awt.Dimension(480, 640));
+        setMaximumSize(new java.awt.Dimension(480, 550));
+        setMinimumSize(new java.awt.Dimension(480, 550));
+        setPreferredSize(new java.awt.Dimension(480, 550));
+        setResizable(false);
         getContentPane().setLayout(new java.awt.GridBagLayout());
 
-        irisInstallerLabel.setFont(new java.awt.Font("sansserif", 0, 36)); // NOI18N
+        irisInstallerLabel.setFont(new java.awt.Font("Arial", 0, 36)); // NOI18N
         irisInstallerLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         irisInstallerLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/iris_profile_icon.png"))); // NOI18N
         irisInstallerLabel.setText(" Iris & Sodium");
@@ -243,10 +245,10 @@ public class NewInstaller extends javax.swing.JFrame {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
-        gridBagConstraints.insets = new java.awt.Insets(80, 0, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(30, 0, 0, 0);
         getContentPane().add(irisInstallerLabel, gridBagConstraints);
 
-        gameVersionLabel.setFont(new java.awt.Font("sansserif", 0, 18)); // NOI18N
+        gameVersionLabel.setFont(new java.awt.Font("Arial", 0, 16)); // NOI18N
         gameVersionLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         gameVersionLabel.setText("Select game version:");
         gameVersionLabel.setToolTipText("");
@@ -262,7 +264,7 @@ public class NewInstaller extends javax.swing.JFrame {
         gridBagConstraints.insets = new java.awt.Insets(20, 0, 0, 0);
         getContentPane().add(gameVersionLabel, gridBagConstraints);
 
-        outdatedText1.setFont(new java.awt.Font("sansserif", 0, 16)); // NOI18N
+        outdatedText1.setFont(new java.awt.Font("Arial", 0, 16)); // NOI18N
         outdatedText1.setForeground(new java.awt.Color(255, 204, 0));
         outdatedText1.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         outdatedText1.setText("Warning: We have ended support for <version>.");
@@ -277,21 +279,20 @@ public class NewInstaller extends javax.swing.JFrame {
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
         getContentPane().add(outdatedText1, gridBagConstraints);
 
-        outdatedText2.setFont(new java.awt.Font("sansserif", 0, 16)); // NOI18N
+        outdatedText2.setFont(new java.awt.Font("Arial", 0, 16)); // NOI18N
         outdatedText2.setForeground(new java.awt.Color(255, 204, 0));
         outdatedText2.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         outdatedText2.setText("The Iris version you get will most likely be outdated.");
         outdatedText2.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         outdatedText2.setMaximumSize(new java.awt.Dimension(450, 21));
-        outdatedText2.setMinimumSize(new java.awt.Dimension(350, 21));
-        outdatedText2.setPreferredSize(new java.awt.Dimension(350, 21));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 5;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
         getContentPane().add(outdatedText2, gridBagConstraints);
 
-        installationType.setFont(new java.awt.Font("sansserif", 0, 18)); // NOI18N
+        installationType.setFont(new java.awt.Font("Arial", 0, 16)); // NOI18N
         installationType.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         installationType.setText(" Installation type:");
         installationType.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
@@ -300,27 +301,26 @@ public class NewInstaller extends javax.swing.JFrame {
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 6;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         getContentPane().add(installationType, gridBagConstraints);
 
-        installationDirectory.setFont(new java.awt.Font("sansserif", 0, 18)); // NOI18N
+        installationDirectory.setFont(new java.awt.Font("Arial", 0, 16)); // NOI18N
         installationDirectory.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         installationDirectory.setText("Installation directory:");
         installationDirectory.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         installationDirectory.setMaximumSize(new java.awt.Dimension(300, 24));
         installationDirectory.setMinimumSize(new java.awt.Dimension(165, 24));
-        installationDirectory.setPreferredSize(new java.awt.Dimension(164, 24));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 8;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         getContentPane().add(installationDirectory, gridBagConstraints);
 
         installationTypesContainer.setLayout(new java.awt.BorderLayout(10, 0));
 
         installType.add(standaloneType);
-        standaloneType.setFont(new java.awt.Font("sansserif", 0, 16)); // NOI18N
+        standaloneType.setFont(new java.awt.Font("Arial", 0, 16)); // NOI18N
         standaloneType.setSelected(true);
         standaloneType.setText("Iris Install");
         standaloneType.setToolTipText("This installs Iris and Sodium by itself, without any mods.");
@@ -332,7 +332,7 @@ public class NewInstaller extends javax.swing.JFrame {
         installationTypesContainer.add(standaloneType, java.awt.BorderLayout.LINE_START);
 
         installType.add(fabricType);
-        fabricType.setFont(new java.awt.Font("sansserif", 0, 16)); // NOI18N
+        fabricType.setFont(new java.awt.Font("Arial", 0, 16)); // NOI18N
         fabricType.setText("Fabric Install");
         fabricType.setToolTipText("This installs Iris and Sodium alongside an installation of Fabric.");
         fabricType.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -348,6 +348,7 @@ public class NewInstaller extends javax.swing.JFrame {
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
         getContentPane().add(installationTypesContainer, gridBagConstraints);
 
+        gameVersionList.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
         gameVersionList.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "1.19", "1.18.2", "1.17.1", "1.16.5" }));
         gameVersionList.setMaximumSize(new java.awt.Dimension(168, 35));
         gameVersionList.setMinimumSize(new java.awt.Dimension(168, 35));
@@ -363,7 +364,7 @@ public class NewInstaller extends javax.swing.JFrame {
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
         getContentPane().add(gameVersionList, gridBagConstraints);
 
-        betaSelection.setFont(new java.awt.Font("sansserif", 0, 16)); // NOI18N
+        betaSelection.setFont(new java.awt.Font("Arial", 0, 16)); // NOI18N
         betaSelection.setText("Use beta version (not recommended)");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -371,6 +372,7 @@ public class NewInstaller extends javax.swing.JFrame {
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
         getContentPane().add(betaSelection, gridBagConstraints);
 
+        directoryName.setFont(new java.awt.Font("Arial", 0, 16)); // NOI18N
         directoryName.setLabel("Directory Name");
         directoryName.setMaximumSize(new java.awt.Dimension(300, 36));
         directoryName.setMinimumSize(new java.awt.Dimension(300, 36));
@@ -386,6 +388,7 @@ public class NewInstaller extends javax.swing.JFrame {
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
         getContentPane().add(directoryName, gridBagConstraints);
 
+        progressBar.setFont(new java.awt.Font("Arial", 0, 16)); // NOI18N
         progressBar.setAlignmentX(0.0F);
         progressBar.setAlignmentY(0.0F);
         progressBar.setMaximumSize(new java.awt.Dimension(380, 25));
@@ -394,14 +397,15 @@ public class NewInstaller extends javax.swing.JFrame {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 10;
-        gridBagConstraints.insets = new java.awt.Insets(79, 0, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(40, 0, 0, 0);
         getContentPane().add(progressBar, gridBagConstraints);
 
-        installButton.setFont(new java.awt.Font("sansserif", 0, 18)); // NOI18N
+        installButton.setFont(new java.awt.Font("Arial", 0, 16)); // NOI18N
         installButton.setText("Install");
-        installButton.setMaximumSize(new java.awt.Dimension(170, 45));
+        installButton.setToolTipText("");
+        installButton.setMargin(new java.awt.Insets(15, 60, 15, 60));
+        installButton.setMaximumSize(new java.awt.Dimension(300, 45));
         installButton.setMinimumSize(new java.awt.Dimension(170, 45));
-        installButton.setPreferredSize(new java.awt.Dimension(170, 45));
         installButton.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 installButtonMouseClicked(evt);
@@ -411,7 +415,7 @@ public class NewInstaller extends javax.swing.JFrame {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 11;
-        gridBagConstraints.insets = new java.awt.Insets(12, 0, 38, 0);
+        gridBagConstraints.insets = new java.awt.Insets(12, 0, 30, 0);
         getContentPane().add(installButton, gridBagConstraints);
 
         pack();
