@@ -403,9 +403,9 @@ public class NewInstaller extends javax.swing.JFrame {
         installButton.setFont(installButton.getFont().deriveFont((float)16));
         installButton.setText("Install");
         installButton.setToolTipText("");
-        installButton.setMargin(new java.awt.Insets(15, 60, 15, 60));
+        installButton.setMargin(new java.awt.Insets(10, 65, 10, 65));
         installButton.setMaximumSize(new java.awt.Dimension(300, 45));
-        installButton.setMinimumSize(new java.awt.Dimension(170, 45));
+        installButton.setMinimumSize(new java.awt.Dimension(173, 45));
         installButton.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 installButtonMouseClicked(evt);
