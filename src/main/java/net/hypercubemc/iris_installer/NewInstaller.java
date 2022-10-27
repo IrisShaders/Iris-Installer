@@ -21,10 +21,8 @@ import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
-import javax.swing.ImageIcon;
-import javax.swing.JFileChooser;
-import javax.swing.JOptionPane;
-import javax.swing.SwingWorker;
+import javax.swing.*;
+
 import net.fabricmc.installer.Main;
 import net.fabricmc.installer.util.MetaHandler;
 import net.fabricmc.installer.util.Reference;
@@ -36,11 +34,12 @@ import org.json.JSONException;
  * @author ims
  */
 @SuppressWarnings("serial")
-public class NewInstaller extends javax.swing.JFrame {
+public class NewInstaller extends JFrame {
 
     private static boolean dark = false;
     private boolean installAsMod;
     private String outdatedPlaceholder = "Warning: We have ended support for <version>.";
+    private String snapshotPlaceholder = "Warning: <version> is a snapshot build and may";
     private String BASE_URL = "https://raw.githubusercontent.com/IrisShaders/Iris-Installer-Files/master/";
     private boolean finishedSuccessfulInstall;
     private InstallerMeta.Version selectedVersion;
@@ -231,9 +230,9 @@ public class NewInstaller extends javax.swing.JFrame {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setIconImage(new ImageIcon(Objects.requireNonNull(Utils.class.getClassLoader().getResource("iris_profile_icon.png"))).getImage());
-        setMaximumSize(new java.awt.Dimension(480, 550));
-        setMinimumSize(new java.awt.Dimension(480, 550));
-        setPreferredSize(new java.awt.Dimension(480, 550));
+        setMaximumSize(new java.awt.Dimension(480, 600));
+        setMinimumSize(new java.awt.Dimension(480, 600));
+        setPreferredSize(new java.awt.Dimension(480, 600));
         setResizable(false);
         getContentPane().setLayout(new java.awt.GridBagLayout());
 
@@ -403,8 +402,8 @@ public class NewInstaller extends javax.swing.JFrame {
         installButton.setFont(installButton.getFont().deriveFont((float)16));
         installButton.setText("Install");
         installButton.setToolTipText("");
-        installButton.setMargin(new java.awt.Insets(10, 65, 10, 65));
-        installButton.setMaximumSize(new java.awt.Dimension(300, 45));
+        installButton.setMargin(new java.awt.Insets(10, 70, 10, 70));
+        installButton.setMaximumSize(new java.awt.Dimension(320, 45));
         installButton.setMinimumSize(new java.awt.Dimension(173, 45));
         installButton.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
@@ -444,6 +443,13 @@ public class NewInstaller extends javax.swing.JFrame {
                 outdatedText1.setText(outdatedPlaceholder.replace("<version>", selectedVersion.name));
                 betaSelection.setVisible(false);
                 outdatedText1.setVisible(true);
+                outdatedText2.setText("The Iris version you get will most likely be outdated.");
+                outdatedText2.setVisible(true);
+            } else if (selectedVersion.snapshot) {
+                outdatedText1.setText(snapshotPlaceholder.replace("<version>", selectedVersion.name));
+                betaSelection.setVisible(false);
+                outdatedText1.setVisible(true);
+                outdatedText2.setText("lose support at any time.");
                 outdatedText2.setVisible(true);
             } else {
                 if (INSTALLER_META.hasBeta()) {
@@ -471,7 +477,7 @@ public class NewInstaller extends javax.swing.JFrame {
             String profileName = installAsMod ? "Fabric Loader " : "Iris & Sodium for ";
             VanillaLauncherIntegration.Icon profileIcon = installAsMod ? VanillaLauncherIntegration.Icon.FABRIC : VanillaLauncherIntegration.Icon.IRIS;
             String loaderVersion = installAsMod ? Main.LOADER_META.getLatestVersion(false).getVersion() : Utils.readTextFile(loaderVersionUrl);
-            boolean success = VanillaLauncherIntegration.installToLauncher(getVanillaGameDir(), getInstallDir(), profileName + selectedVersion.name, selectedVersion.name, loaderName, loaderVersion, profileIcon);
+            boolean success = VanillaLauncherIntegration.installToLauncher(this, getVanillaGameDir(), getInstallDir(), profileName + selectedVersion.name, selectedVersion.name, loaderName, loaderVersion, profileIcon);
             if (!success) {
                 System.out.println("Failed to install to launcher, canceling!");
                 return;
@@ -489,6 +495,8 @@ public class NewInstaller extends javax.swing.JFrame {
         }
 
         installButton.setText("Downloading...");
+        //installButton.setMargin(new java.awt.Insets(10, 90, 10, 90));
+
         installButton.setEnabled(false);
         progressBar.setForeground(new Color(76, 135, 200));
         progressBar.setValue(0);
@@ -606,6 +614,8 @@ public class NewInstaller extends javax.swing.JFrame {
 
                 if (installSuccess) {
                     installButton.setText("Completed!");
+                    //installButton.setMargin(new java.awt.Insets(10, 80, 10, 80));
+
                     progressBar.setForeground(new Color(39, 195, 75));
                     installButton.setEnabled(true);
                     finishedSuccessfulInstall = true;

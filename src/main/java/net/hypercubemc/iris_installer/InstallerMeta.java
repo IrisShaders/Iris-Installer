@@ -58,11 +58,18 @@ public class InstallerMeta {
 
     public static class Version {
         boolean outdated;
+        boolean snapshot;
         String name;
 
         public Version(HashMap<String, Object> jsonObject) {
             this.name = (String) jsonObject.get("name");
+            this.snapshot = (boolean) jsonObject.get("snapshot");
             this.outdated = (boolean) jsonObject.get("outdated");
+        }
+
+        @Override
+        public String toString() {
+            return name;
         }
     }
 }

@@ -4,19 +4,22 @@ import mjson.Json;
 import net.fabricmc.installer.client.ProfileInstaller;
 import net.fabricmc.installer.util.Reference;
 import net.fabricmc.installer.util.Utils;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import javax.swing.*;
+import java.awt.*;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.List;
 import java.util.stream.Collectors;
 
 public class VanillaLauncherIntegration {
-    public static boolean installToLauncher(Path vanillaGameDir, Path instanceDir, String profileName, String gameVersion, String loaderName, String loaderVersion, Icon icon) throws IOException {
+    public static boolean installToLauncher(Component parent, Path vanillaGameDir, Path instanceDir, String profileName, String gameVersion, String loaderName, String loaderVersion, Icon icon) throws IOException {
         String versionId = String.format("%s-%s-%s", loaderName, loaderVersion, gameVersion);
 
         ProfileInstaller.LauncherType launcherType = System.getProperty("os.name").contains("Windows") ? getLauncherType(vanillaGameDir) : /* Return standalone if we aren't on Windows.*/ ProfileInstaller.LauncherType.WIN32;
@@ -25,7 +28,7 @@ public class VanillaLauncherIntegration {
             return false;
         }
         installVersion(vanillaGameDir, gameVersion, loaderName, loaderVersion, launcherType);
-        installProfile(vanillaGameDir, instanceDir, profileName, versionId, icon, launcherType);
+        installProfile(parent, vanillaGameDir, instanceDir, profileName, versionId, icon, launcherType);
         return true;
     }
 
@@ -69,7 +72,7 @@ public class VanillaLauncherIntegration {
         json.getOrDefault("arguments", Json.array()).asJsonMap().getOrDefault("jvm", Json.array()).asJsonList().add(factory.string("-Diris.installer=true"));
     }
 
-    private static void installProfile(Path mcDir, Path instanceDir, String profileName, String versionId, Icon icon, ProfileInstaller.LauncherType launcherType) throws IOException {
+    private static void installProfile(Component parent, Path mcDir, Path instanceDir, String profileName, String versionId, Icon icon, ProfileInstaller.LauncherType launcherType) throws IOException {
         Path launcherProfiles = mcDir.resolve(launcherType.profileJsonName);
         if (!Files.exists(launcherProfiles)) {
             System.out.println("Could not find launcher_profiles");
@@ -78,7 +81,14 @@ public class VanillaLauncherIntegration {
 
         System.out.println("Creating profile");
 
-        JSONObject jsonObject = new JSONObject(Utils.readString(launcherProfiles));
+        JSONObject jsonObject = null;
+
+        try {
+            jsonObject = new JSONObject(Utils.readString(launcherProfiles));
+        } catch (JSONException e) {
+            JOptionPane.showMessageDialog(parent, "Failed to add profile, you might not have logged into the launcher.");
+            return;
+        }
 
         JSONObject profiles = jsonObject.getJSONObject("profiles");
 
