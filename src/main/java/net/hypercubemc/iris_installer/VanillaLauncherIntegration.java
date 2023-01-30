@@ -1,39 +1,62 @@
 package net.hypercubemc.iris_installer;
 
+import org.json.JSONArray;
 import mjson.Json;
 import net.fabricmc.installer.client.ProfileInstaller;
 import net.fabricmc.installer.util.Reference;
 import net.fabricmc.installer.util.Utils;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.quiltmc.installer.LaunchJson;
+import org.quiltmc.installer.LauncherProfiles;
+import org.quiltmc.installer.QuiltMeta;
 
 import javax.swing.*;
 import java.awt.*;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class VanillaLauncherIntegration {
-    public static boolean installToLauncher(Component parent, Path vanillaGameDir, Path instanceDir, String profileName, String gameVersion, String loaderName, String loaderVersion, Icon icon) throws IOException {
+    private static final DateFormat ISO_8601 = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");
+
+    public static boolean installToLauncher(Component parent, Path vanillaGameDir, Path instanceDir, String profileName, String gameVersion, String loaderName, Icon icon) throws IOException {
         String versionId = String.format("%s-%s-%s", loaderName, loaderVersion, gameVersion);
 
+        Set<QuiltMeta.Endpoint<?>> endpoints = new HashSet();
+        endpoints.add(QuiltMeta.LOADER_VERSIONS_ENDPOINT);
+        endpoints.add(QuiltMeta.INTERMEDIARY_VERSIONS_ENDPOINT);
+        AtomicReference<String> loaderVersion = new AtomicReference<>();
+        CompletableFuture<QuiltMeta> metaFuture = QuiltMeta.create("https://meta.quiltmc.org", "https://meta.fabricmc.net", endpoints);
+        try {
+            loaderVersion.set(metaFuture.get().getEndpoint(QuiltMeta.LOADER_VERSIONS_ENDPOINT).get(0));
+        } catch (InterruptedException | ExecutionException e) {
+            throw new RuntimeException(e);
+        }
         ProfileInstaller.LauncherType launcherType = System.getProperty("os.name").contains("Windows") ? getLauncherType(vanillaGameDir) : /* Return standalone if we aren't on Windows.*/ ProfileInstaller.LauncherType.WIN32;
         if (launcherType == null) {
             // The installation has been canceled via closing the window, most likely.
             return false;
         }
-        installVersion(vanillaGameDir, gameVersion, loaderName, loaderVersion, launcherType);
+        installVersion(vanillaGameDir, gameVersion, loaderName, loaderVersion.get(), launcherType);
         installProfile(parent, vanillaGameDir, instanceDir, profileName, versionId, icon, launcherType);
         return true;
     }
 
-    public static void installVersion(Path mcDir, String gameVersion, String loaderName, String loaderVersion, ProfileInstaller.LauncherType launcherType) throws IOException {
-        System.out.println("Installing " + gameVersion + " with fabric " + loaderVersion + " to launcher " + launcherType);
+    public static void installVersion(Path mcDir, String gameVersion, String loaderName, String loaderVersion, Icon icon) throws IOException {
+        System.out.println("Installing " + gameVersion + " with quilt " + loaderVersion + " to launcher");
         String versionId = String.format("%s-%s-%s", loaderName, loaderVersion, gameVersion);
         Path versionsDir = mcDir.resolve("versions");
         Path profileDir = versionsDir.resolve(versionId);
@@ -44,33 +67,33 @@ public class VanillaLauncherIntegration {
 
         Path dummyJar = profileDir.resolve(versionId + ".jar");
         Files.deleteIfExists(dummyJar);
+        Files.deleteIfExists(profileJsonPath);
         Files.createFile(dummyJar);
-        URL profileUrl = new URL(Reference.getMetaServerEndpoint(String.format("v2/versions/loader/%s/%s/profile/json", gameVersion, loaderVersion)));
-        Json profileJson = Json.read(profileUrl);
-        if (loaderName.equals("iris-fabric-loader")) {
-            editVersionJson(profileJson);
-        }
-        Utils.writeToFile(profileJsonPath, profileJson.toString());
-    }
-    
-    private static void editVersionJson(Json profileJson) {
-        Json.Factory factory = Json.factory();
-        Map<String, Json> json = profileJson.asJsonMap();
-        // Replace fabric-loader-etc with iris-fabric-loader-etc
-        json.compute("id", (ignored, existing) -> factory.string("iris-" + existing.asString()));
-        // Replace loader maven url and name
-        for (Json entry : json.get("libraries").asJsonList()) {
-            final String id = "net.fabricmc:fabric-loader:";
-            String name = entry.asJsonMap().get("name").asString();
-            if (name.startsWith("net.fabricmc:fabric-loader:")) {
-                entry.asJsonMap().put("name", factory.string("net.coderbot:iris-loader:" + name.substring(id.length())));
-                entry.asJsonMap().put("url", factory.string("https://raw.githubusercontent.com/IrisShaders/Iris-Installer-Maven/master/"));
+        CompletableFuture<String> json = LaunchJson.get(gameVersion, loaderVersion, "/v3/versions/loader/%s/%s/profile/json");
+            try {
+                String json2 = json.get();
+                JSONObject object = new JSONObject(json2);
+                object.put("id", versionId);
+                if (icon == Icon.IRIS) {
+                    JSONObject object2 = object.has("arguments") ? object.getJSONObject("arguments") : new JSONObject();
+                    JSONArray array = object2.has("jvm") ? object2.getJSONArray("jvm") : new JSONArray();
+                    array.put("-Dloader.modsDir=iris-reserved/" + gameVersion);
+                    array.put("-Diris.installer=true");
+                    object2.put("jvm", array);
+                    object.put("arguments", object2);
+                }
+                try (Writer writer = new OutputStreamWriter(Files.newOutputStream(profileJsonPath, StandardOpenOption.CREATE_NEW))) {
+                    object.write(writer);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            } catch (InterruptedException | ExecutionException e) {
+                throw new RuntimeException(e);
             }
-        }
-
-        // Add the JVM argument -Diris.installer=true so Iris can detect if the installer is used
-        json.getOrDefault("arguments", Json.array()).asJsonMap().getOrDefault("jvm", Json.array()).asJsonList().add(factory.string("-Diris.installer=true"));
     }
+
+    private static void installProfile(Path mcDir, Path instanceDir, String profileName, String versionId, Icon icon) throws IOException {
+        final Path launcherProfilesPath = mcDir.resolve("launcher_profiles.json");
 
     private static void installProfile(Component parent, Path mcDir, Path instanceDir, String profileName, String versionId, Icon icon, ProfileInstaller.LauncherType launcherType) throws IOException {
         Path launcherProfiles = mcDir.resolve(launcherType.profileJsonName);
@@ -92,48 +115,51 @@ public class VanillaLauncherIntegration {
 
         JSONObject profiles = jsonObject.getJSONObject("profiles");
 
-        String foundProfileName = profileName;
+        // Modify the profile
+        if (profiles.has(profileName)) {
+            JSONObject rawProfile = profiles.getJSONObject(profileName);
 
-        for (Iterator<String> it = profiles.keys(); it.hasNext();) {
-            String key = it.next();
+            rawProfile.put("lastVersionId", versionId);
 
-            JSONObject foundProfile = profiles.getJSONObject(key);
-            if (foundProfile.has("lastVersionId") && foundProfile.getString("lastVersionId").equals(versionId) && foundProfile.has("gameDir") && foundProfile.getString("gameDir").equals(instanceDir.toString())) {
-                foundProfileName = key;
-            }
+            profiles.put(profileName, rawProfile);
+        } else {
+            // Create a new profile
+            JSONObject rawProfile = new JSONObject();
+
+            rawProfile.put("name", profileName);
+            rawProfile.put("type", "custom");
+            rawProfile.put("created", ISO_8601.format(new Date()));
+            rawProfile.put("lastUsed", ISO_8601.format(new Date()));
+            rawProfile.put("icon", getProfileIcon(icon));
+            rawProfile.put("lastVersionId", versionId);
+
+            profiles.put(profileName, rawProfile);
         }
 
-        // If the profile already exists, use it instead of making a new one so that user's settings are kept (e.g icon)
-        JSONObject profile = profiles.has(foundProfileName) ? profiles.getJSONObject(foundProfileName) : createProfile(profileName, instanceDir, versionId, icon);
-        profile.put("name", profileName);
-        profile.put("lastUsed", Utils.ISO_8601.format(new Date())); // Update timestamp to bring to top of profile list
-        profile.put("lastVersionId", versionId);
-
-        profiles.put(foundProfileName, profile);
         jsonObject.put("profiles", profiles);
 
-        Utils.writeToFile(launcherProfiles, jsonObject.toString());
+        // Write out the new profiles
+        try (Writer writer = Files.newBufferedWriter(launcherProfilesPath)) {
+            jsonObject.write(writer);
+        }
     }
 
     private static JSONObject createProfile(String name, Path instanceDir, String versionId, Icon icon) {
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("name", name);
         jsonObject.put("type", "custom");
-        jsonObject.put("created", Utils.ISO_8601.format(new Date()));
+        jsonObject.put("created", ISO_8601.format(new Date()));
         jsonObject.put("gameDir", instanceDir.toString());
-        jsonObject.put("lastUsed", Utils.ISO_8601.format(new Date()));
+        jsonObject.put("lastUsed", ISO_8601.format(new Date()));
         jsonObject.put("lastVersionId", versionId);
         jsonObject.put("icon", getProfileIcon(icon));
         return jsonObject;
     }
 
     private static String getProfileIcon(Icon icon) {
-        if (icon == Icon.FABRIC) {
-            return Utils.getProfileIcon();
-        }
-
         try {
-            InputStream is = Utils.class.getClassLoader().getResourceAsStream("iris_profile_icon.png");
+            Class klass = icon == Icon.QUILT ? LauncherProfiles.class : Installer.class;
+            InputStream is = klass.getClassLoader().getResourceAsStream(icon == Icon.QUILT ? "icon.png" : "iris_profile_icon.png");
 
             String var4;
             try {
@@ -141,7 +167,7 @@ public class VanillaLauncherIntegration {
                 int offset = 0;
 
                 int len;
-                while((len = is.read(ret, offset, ret.length - offset)) != -1) {
+                while ((len = is.read(ret, offset, ret.length - offset)) != -1) {
                     offset += len;
                     if (offset == ret.length) {
                         ret = Arrays.copyOf(ret, ret.length * 2);
@@ -172,45 +198,8 @@ public class VanillaLauncherIntegration {
         }
     }
 
-
-    private static ProfileInstaller.LauncherType showLauncherTypeSelection() {
-        String[] options = new String[]{Utils.BUNDLE.getString("prompt.launcher.type.xbox"), Utils.BUNDLE.getString("prompt.launcher.type.win32")};
-        int result = JOptionPane.showOptionDialog(null, Utils.BUNDLE.getString("prompt.launcher.type.body"), Utils.BUNDLE.getString("installer.title"), JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
-        if (result == JOptionPane.CLOSED_OPTION) {
-            return null;
-        } else {
-            return result == JOptionPane.YES_OPTION ? ProfileInstaller.LauncherType.MICROSOFT_STORE : ProfileInstaller.LauncherType.WIN32;
-        }
-    }
-
-    public static ProfileInstaller.LauncherType getLauncherType(Path vanillaGameDir) {
-        ProfileInstaller.LauncherType launcherType;
-        List<ProfileInstaller.LauncherType> types = getInstalledLauncherTypes(vanillaGameDir);
-        if (types.size() == 0) {
-            // Default to WIN32, since nothing will happen anyway
-            System.out.println("No launchers found, profile installation will not take place!");
-            launcherType = ProfileInstaller.LauncherType.WIN32;
-        } else if (types.size() == 1) {
-            System.out.println("Found only one launcher (" + types.get(0) + "), will proceed with that!");
-            launcherType = types.get(0);
-        } else {
-            System.out.println("Multiple launchers found, showing selection screen!");
-            launcherType = showLauncherTypeSelection();
-            if (launcherType == null) {
-                System.out.println(Utils.BUNDLE.getString("prompt.ready.install"));
-                launcherType = ProfileInstaller.LauncherType.WIN32;
-            }
-        }
-
-        return launcherType;
-    }
-
-    public static List<ProfileInstaller.LauncherType> getInstalledLauncherTypes(Path mcDir) {
-        return Arrays.stream(ProfileInstaller.LauncherType.values()).filter((launcherType) -> Files.exists(mcDir.resolve(launcherType.profileJsonName))).collect(Collectors.toList());
-    }
-
     public enum Icon {
         IRIS,
-        FABRIC
+        QUILT
     }
 }
