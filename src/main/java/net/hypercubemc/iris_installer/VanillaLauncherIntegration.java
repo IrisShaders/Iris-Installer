@@ -1,10 +1,6 @@
 package net.hypercubemc.iris_installer;
 
 import org.json.JSONArray;
-import mjson.Json;
-import net.fabricmc.installer.client.ProfileInstaller;
-import net.fabricmc.installer.util.Reference;
-import net.fabricmc.installer.util.Utils;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.quiltmc.installer.LaunchJson;
@@ -13,10 +9,10 @@ import org.quiltmc.installer.QuiltMeta;
 
 import javax.swing.*;
 import java.awt.*;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
+import java.io.*;
+import java.net.URL;
+import java.net.URLConnection;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
@@ -33,24 +29,37 @@ public class VanillaLauncherIntegration {
     private static final DateFormat ISO_8601 = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");
 
     public static boolean installToLauncher(Component parent, Path vanillaGameDir, Path instanceDir, String profileName, String gameVersion, String loaderName, Icon icon) throws IOException {
+        String loaderVersion = "";
+
+        URL loaderVersionUrl = new URL("https://raw.githubusercontent.com/IrisShaders/Iris-Installer-Maven/master/latest-loader-quilt");
+        URLConnection conn = loaderVersionUrl.openConnection();
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8))) {
+            loaderVersion = reader.lines().collect(Collectors.joining("\n"));
+        }
+
+        if ("latest".equals(loaderVersion.trim())) {
+            Set<QuiltMeta.Endpoint<?>> endpoints = new HashSet();
+            endpoints.add(QuiltMeta.LOADER_VERSIONS_ENDPOINT);
+            endpoints.add(QuiltMeta.INTERMEDIARY_VERSIONS_ENDPOINT);
+            AtomicReference<String> loaderVersionReference = new AtomicReference<>();
+            CompletableFuture<QuiltMeta> metaFuture = QuiltMeta.create("https://meta.quiltmc.org", "https://meta.fabricmc.net", endpoints);
+            try {
+                loaderVersionReference.set(metaFuture.get().getEndpoint(QuiltMeta.LOADER_VERSIONS_ENDPOINT).get(0));
+            } catch (InterruptedException | ExecutionException e) {
+                throw new RuntimeException(e);
+            }
+
+            loaderVersion = loaderVersionReference.get();
+        }
+
         String versionId = String.format("%s-%s-%s", loaderName, loaderVersion, gameVersion);
 
-        Set<QuiltMeta.Endpoint<?>> endpoints = new HashSet();
-        endpoints.add(QuiltMeta.LOADER_VERSIONS_ENDPOINT);
-        endpoints.add(QuiltMeta.INTERMEDIARY_VERSIONS_ENDPOINT);
-        AtomicReference<String> loaderVersion = new AtomicReference<>();
-        CompletableFuture<QuiltMeta> metaFuture = QuiltMeta.create("https://meta.quiltmc.org", "https://meta.fabricmc.net", endpoints);
-        try {
-            loaderVersion.set(metaFuture.get().getEndpoint(QuiltMeta.LOADER_VERSIONS_ENDPOINT).get(0));
-        } catch (InterruptedException | ExecutionException e) {
-            throw new RuntimeException(e);
-        }
-        ProfileInstaller.LauncherType launcherType = System.getProperty("os.name").contains("Windows") ? getLauncherType(vanillaGameDir) : /* Return standalone if we aren't on Windows.*/ ProfileInstaller.LauncherType.WIN32;
+        LauncherType launcherType = System.getProperty("os.name").contains("Windows") ? getLauncherType(vanillaGameDir) : /* Return standalone if we aren't on Windows.*/ LauncherType.WIN32;
         if (launcherType == null) {
             // The installation has been canceled via closing the window, most likely.
             return false;
         }
-        installVersion(vanillaGameDir, gameVersion, loaderName, loaderVersion.get(), launcherType);
+        installVersion(vanillaGameDir, gameVersion, loaderName, loaderVersion, icon);
         installProfile(parent, vanillaGameDir, instanceDir, profileName, versionId, icon, launcherType);
         return true;
     }
@@ -92,11 +101,8 @@ public class VanillaLauncherIntegration {
             }
     }
 
-    private static void installProfile(Path mcDir, Path instanceDir, String profileName, String versionId, Icon icon) throws IOException {
-        final Path launcherProfilesPath = mcDir.resolve("launcher_profiles.json");
-
-    private static void installProfile(Component parent, Path mcDir, Path instanceDir, String profileName, String versionId, Icon icon, ProfileInstaller.LauncherType launcherType) throws IOException {
-        Path launcherProfiles = mcDir.resolve(launcherType.profileJsonName);
+    private static void installProfile(Component parent, Path mcDir, Path instanceDir, String profileName, String versionId, Icon icon, LauncherType launcherType) throws IOException {
+        final Path launcherProfiles = mcDir.resolve(launcherType.profileJsonName);
         if (!Files.exists(launcherProfiles)) {
             System.out.println("Could not find launcher_profiles");
             return;
@@ -107,7 +113,7 @@ public class VanillaLauncherIntegration {
         JSONObject jsonObject = null;
 
         try {
-            jsonObject = new JSONObject(Utils.readString(launcherProfiles));
+            jsonObject = new JSONObject(new String(Files.readAllBytes(launcherProfiles), StandardCharsets.UTF_8));
         } catch (JSONException e) {
             JOptionPane.showMessageDialog(parent, "Failed to add profile, you might not have logged into the launcher.");
             return;
@@ -139,7 +145,7 @@ public class VanillaLauncherIntegration {
         jsonObject.put("profiles", profiles);
 
         // Write out the new profiles
-        try (Writer writer = Files.newBufferedWriter(launcherProfilesPath)) {
+        try (Writer writer = Files.newBufferedWriter(launcherProfiles)) {
             jsonObject.write(writer);
         }
     }
@@ -158,7 +164,7 @@ public class VanillaLauncherIntegration {
 
     private static String getProfileIcon(Icon icon) {
         try {
-            Class klass = icon == Icon.QUILT ? LauncherProfiles.class : Installer.class;
+            Class klass = icon == Icon.QUILT ? LauncherProfiles.class : NewInstaller.class;
             InputStream is = klass.getClassLoader().getResourceAsStream(icon == Icon.QUILT ? "icon.png" : "iris_profile_icon.png");
 
             String var4;
@@ -196,6 +202,43 @@ public class VanillaLauncherIntegration {
             var7.printStackTrace();
             return "TNT";
         }
+    }
+
+    private static LauncherType showLauncherTypeSelection() {
+        String[] options = new String[]{"Xbox/MS Store", "Standalone"};
+        int result = JOptionPane.showOptionDialog(null, "Iris has detected 2 different installations of the Minecraft Launcher, which launcher do you wish to install Iris to?\\n\\n- Select Microsoft Store if you are playing Minecraft through the Xbox App or the Windows Store.\\n- Select Standalone if you downloaded the Minecraft launcher directly from the Minecraft.net website.\\n\\nIf you are unsure try the Microsoft Store option first, you can always re-run the installer.\n"
+                , "Iris Installer", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
+        if (result == JOptionPane.CLOSED_OPTION) {
+            return null;
+        } else {
+            return result == JOptionPane.YES_OPTION ? LauncherType.MICROSOFT_STORE : LauncherType.WIN32;
+        }
+    }
+
+    public static LauncherType getLauncherType(Path vanillaGameDir) {
+        LauncherType launcherType;
+        List<LauncherType> types = getInstalledLauncherTypes(vanillaGameDir);
+        if (types.size() == 0) {
+            // Default to WIN32, since nothing will happen anyway
+            System.out.println("No launchers found, profile installation will not take place!");
+            launcherType = LauncherType.WIN32;
+        } else if (types.size() == 1) {
+            System.out.println("Found only one launcher (" + types.get(0) + "), will proceed with that!");
+            launcherType = types.get(0);
+        } else {
+            System.out.println("Multiple launchers found, showing selection screen!");
+            launcherType = showLauncherTypeSelection();
+            if (launcherType == null) {
+                System.out.println("couldn't find a launcher, doing win32!");
+                launcherType = LauncherType.WIN32;
+            }
+        }
+
+        return launcherType;
+    }
+
+    public static List<LauncherType> getInstalledLauncherTypes(Path mcDir) {
+        return Arrays.stream(LauncherType.values()).filter((launcherType) -> Files.exists(mcDir.resolve(launcherType.profileJsonName))).collect(Collectors.toList());
     }
 
     public enum Icon {

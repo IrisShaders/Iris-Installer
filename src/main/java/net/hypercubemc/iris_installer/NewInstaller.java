@@ -23,10 +23,6 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import javax.swing.*;
 
-import net.fabricmc.installer.Main;
-import net.fabricmc.installer.util.MetaHandler;
-import net.fabricmc.installer.util.Reference;
-import net.fabricmc.installer.util.Utils;
 import org.json.JSONException;
 
 /**
@@ -52,16 +48,6 @@ public class NewInstaller extends JFrame {
      */
     public NewInstaller() {
         super("Iris Installer");
-        Main.LOADER_META = new MetaHandler(Reference.getMetaServerEndpoint("v2/versions/loader"));
-
-        try {
-            Main.LOADER_META.load();
-        } catch (IOException e) {
-            System.out.println("Failed to fetch fabric version info from the server!");
-            e.printStackTrace();
-            JOptionPane.showMessageDialog(null, "The installer was unable to fetch fabric version info from the server, please check your internet connection and try again later.", "Please check your internet connection!", JOptionPane.ERROR_MESSAGE);
-            throw new RuntimeException(e);
-        }
 
         INSTALLER_META = new InstallerMeta(BASE_URL + "meta-new.json");
 
@@ -229,7 +215,7 @@ public class NewInstaller extends JFrame {
         installButton = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        setIconImage(new ImageIcon(Objects.requireNonNull(Utils.class.getClassLoader().getResource("iris_profile_icon.png"))).getImage());
+        setIconImage(new ImageIcon(Objects.requireNonNull(NewInstaller.class.getClassLoader().getResource("iris_profile_icon.png"))).getImage());
         setMaximumSize(new java.awt.Dimension(480, 600));
         setMinimumSize(new java.awt.Dimension(480, 600));
         setPreferredSize(new java.awt.Dimension(480, 600));
@@ -332,7 +318,7 @@ public class NewInstaller extends JFrame {
 
         installType.add(fabricType);
         fabricType.setFont(fabricType.getFont().deriveFont((float)16));
-        fabricType.setText("Fabric Install");
+        fabricType.setText("Quilt Install");
         fabricType.setToolTipText("This installs Iris and Sodium alongside an installation of Fabric.");
         fabricType.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
@@ -470,14 +456,12 @@ public class NewInstaller extends JFrame {
     }//GEN-LAST:event_fabricTypeMouseClicked
 
     private void installButtonMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_installButtonMouseClicked
-        String loaderName = installAsMod ? "fabric-loader" : "iris-fabric-loader";
+        String loaderName = installAsMod ? "quilt-loader" : "iris-quilt-loader";
 
         try {
-            URL loaderVersionUrl = new URL("https://raw.githubusercontent.com/IrisShaders/Iris-Installer-Maven/master/latest-loader");
-            String profileName = installAsMod ? "Fabric Loader " : "Iris & Sodium for ";
-            VanillaLauncherIntegration.Icon profileIcon = installAsMod ? VanillaLauncherIntegration.Icon.FABRIC : VanillaLauncherIntegration.Icon.IRIS;
-            String loaderVersion = installAsMod ? Main.LOADER_META.getLatestVersion(false).getVersion() : Utils.readTextFile(loaderVersionUrl);
-            boolean success = VanillaLauncherIntegration.installToLauncher(this, getVanillaGameDir(), getInstallDir(), profileName + selectedVersion.name, selectedVersion.name, loaderName, loaderVersion, profileIcon);
+            String profileName = installAsMod ? "Quilt Loader " : "Iris & Sodium for ";
+            VanillaLauncherIntegration.Icon profileIcon = installAsMod ? VanillaLauncherIntegration.Icon.QUILT : VanillaLauncherIntegration.Icon.IRIS;
+            boolean success = VanillaLauncherIntegration.installToLauncher(this, getVanillaGameDir(), getInstallDir(), profileName + selectedVersion.name, selectedVersion.name, loaderName, profileIcon);
             if (!success) {
                 System.out.println("Failed to install to launcher, canceling!");
                 return;

@@ -229,7 +229,7 @@
                 <Font component="fabricType" property="font" relativeSize="false" size="16"/>
               </FontInfo>
             </Property>
-            <Property name="text" type="java.lang.String" value="Fabric Install"/>
+            <Property name="text" type="java.lang.String" value="Quilt Install"/>
             <Property name="toolTipText" type="java.lang.String" value="This installs Iris and Sodium alongside an installation of Fabric."/>
           </Properties>
           <Events>
