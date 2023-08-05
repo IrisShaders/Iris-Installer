@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "id": "irisinstaller",
+  "version": "3.0.2",
+  "name": "Iris Installer - FakeMod",
+  "description": "If you are seeing this, there's a bug. Remove the Iris installer from your mods folder.",
+  "authors": [
+    "Me!"
+  ],
+  "contact": {
+    "homepage": "https://irisshaders.dev/"
+  },
+  "license": "LGPLv3",
+  "environment": "*",
+  "entrypoints": {
+    "preLaunch": [
+      "net.hypercubemc.iris_installer.IrisPreLaunch"
+    ]
+  }
+}

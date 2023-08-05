@@ -23,7 +23,7 @@ repositories {
 dependencies {
     implementation "org.json:json:20210307"
     implementation "com.formdev:flatlaf:1.6.1"
-
+    compileOnly "org.lwjgl:lwjgl-tinyfd:3.3.2"
     implementation "net.fabricmc:fabric-installer:0.9.0"
 }
 
@@ -70,6 +70,7 @@ jar {
         attributes("Main-Class": application.mainClass)
     }
 
+    duplicatesStrategy = DuplicatesStrategy.WARN
     from "LICENSE"
 
     from (configurations.compileClasspath.filter{ it.exists() }.collect { it.isDirectory() ? it : zipTree(it) }) {
@@ -78,6 +79,30 @@ jar {
         exclude 'META-INF/*.RSA'
     }
 }
+
+sourceSets {
+    // "header" API stubs for implementing APIs from other mods
+    // These are not compiled into the resulting JAR file or loaded at runtime,
+    // they are for compilation purposes only.
+    //
+    // Proper implementations of these classes *might* be available at runtime,
+    // but that is not guaranteed. Generally, we must detect whether they are
+    // available through mod loading checks (or if a corresponding entrypoint is
+    // called by Fabric Loader / Quilt Loader / etc).
+    headers {
+        java {
+            compileClasspath += main.compileClasspath
+        }
+    }
+
+    main {
+        java {
+            // headers / API stubs are only available at compilation time.
+            compileClasspath += headers.output
+        }
+    }
+}
+
 
 tasks.withType(JavaCompile).configureEach {
     // ensure that the encoding is set to UTF-8, no matter what the system default is
