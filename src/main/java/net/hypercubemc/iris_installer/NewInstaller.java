@@ -52,7 +52,7 @@ public class NewInstaller extends JFrame {
      */
     public NewInstaller() {
         super("Iris Installer");
-        Main.LOADER_META = new MetaHandler(Reference.getMetaServerEndpoint("v2/versions/loader"));
+        Main.LOADER_META = new MetaHandler(("v2/versions/loader"));
 
         try {
             Main.LOADER_META.load();
@@ -476,8 +476,10 @@ public class NewInstaller extends JFrame {
             URL loaderVersionUrl = new URL("https://raw.githubusercontent.com/IrisShaders/Iris-Installer-Maven/master/latest-loader");
             String profileName = installAsMod ? "Fabric Loader " : "Iris & Sodium for ";
             VanillaLauncherIntegration.Icon profileIcon = installAsMod ? VanillaLauncherIntegration.Icon.FABRIC : VanillaLauncherIntegration.Icon.IRIS;
-            String loaderVersion = installAsMod ? Main.LOADER_META.getLatestVersion(false).getVersion() : Utils.readTextFile(loaderVersionUrl);
-            boolean success = VanillaLauncherIntegration.installToLauncher(this, getVanillaGameDir(), getInstallDir(), profileName + selectedVersion.name, selectedVersion.name, loaderName, loaderVersion, profileIcon);
+            Path modsFolder0 = installAsMod ? getInstallDir().resolve("mods") : getInstallDir().resolve("iris-reserved").resolve(selectedVersion.name);
+
+            String loaderVersion = Main.LOADER_META.getLatestVersion(false).getVersion();
+            boolean success = VanillaLauncherIntegration.installToLauncher(this, getVanillaGameDir(), getInstallDir(), modsFolder0, profileName + selectedVersion.name, selectedVersion.name, loaderName, loaderVersion, profileIcon);
             if (!success) {
                 System.out.println("Failed to install to launcher, canceling!");
                 return;

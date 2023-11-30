@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class VanillaLauncherIntegration {
-    public static boolean installToLauncher(Component parent, Path vanillaGameDir, Path instanceDir, String profileName, String gameVersion, String loaderName, String loaderVersion, Icon icon) throws IOException {
+    public static boolean installToLauncher(Component parent, Path vanillaGameDir, Path instanceDir, Path modsFolder, String profileName, String gameVersion, String loaderName, String loaderVersion, Icon icon) throws IOException {
         String versionId = String.format("%s-%s-%s", loaderName, loaderVersion, gameVersion);
 
         ProfileInstaller.LauncherType launcherType = System.getProperty("os.name").contains("Windows") ? getLauncherType(vanillaGameDir) : /* Return standalone if we aren't on Windows.*/ ProfileInstaller.LauncherType.WIN32;
@@ -27,12 +27,12 @@ public class VanillaLauncherIntegration {
             // The installation has been canceled via closing the window, most likely.
             return false;
         }
-        installVersion(vanillaGameDir, gameVersion, loaderName, loaderVersion, launcherType);
+        installVersion(vanillaGameDir, modsFolder, gameVersion, loaderName, loaderVersion, launcherType);
         installProfile(parent, vanillaGameDir, instanceDir, profileName, versionId, icon, launcherType);
         return true;
     }
 
-    public static void installVersion(Path mcDir, String gameVersion, String loaderName, String loaderVersion, ProfileInstaller.LauncherType launcherType) throws IOException {
+    public static void installVersion(Path mcDir, Path modsFolder, String gameVersion, String loaderName, String loaderVersion, ProfileInstaller.LauncherType launcherType) throws IOException {
         System.out.println("Installing " + gameVersion + " with fabric " + loaderVersion + " to launcher " + launcherType);
         String versionId = String.format("%s-%s-%s", loaderName, loaderVersion, gameVersion);
         Path versionsDir = mcDir.resolve("versions");
@@ -45,31 +45,23 @@ public class VanillaLauncherIntegration {
         Path dummyJar = profileDir.resolve(versionId + ".jar");
         Files.deleteIfExists(dummyJar);
         Files.createFile(dummyJar);
-        URL profileUrl = new URL(Reference.getMetaServerEndpoint(String.format("v2/versions/loader/%s/%s/profile/json", gameVersion, loaderVersion)));
+        URL profileUrl = new URL("https://meta.fabricmc.net/" + (String.format("v2/versions/loader/%s/%s/profile/json", gameVersion, loaderVersion)));
         Json profileJson = Json.read(profileUrl);
         if (loaderName.equals("iris-fabric-loader")) {
-            editVersionJson(profileJson);
+            editVersionJson(profileJson, modsFolder);
         }
         Utils.writeToFile(profileJsonPath, profileJson.toString());
     }
     
-    private static void editVersionJson(Json profileJson) {
+    private static void editVersionJson(Json profileJson, Path modsFolder) {
         Json.Factory factory = Json.factory();
         Map<String, Json> json = profileJson.asJsonMap();
         // Replace fabric-loader-etc with iris-fabric-loader-etc
         json.compute("id", (ignored, existing) -> factory.string("iris-" + existing.asString()));
-        // Replace loader maven url and name
-        for (Json entry : json.get("libraries").asJsonList()) {
-            final String id = "net.fabricmc:fabric-loader:";
-            String name = entry.asJsonMap().get("name").asString();
-            if (name.startsWith("net.fabricmc:fabric-loader:")) {
-                entry.asJsonMap().put("name", factory.string("net.coderbot:iris-loader:" + name.substring(id.length())));
-                entry.asJsonMap().put("url", factory.string("https://raw.githubusercontent.com/IrisShaders/Iris-Installer-Maven/master/"));
-            }
-        }
 
         // Add the JVM argument -Diris.installer=true so Iris can detect if the installer is used
         json.getOrDefault("arguments", Json.array()).asJsonMap().getOrDefault("jvm", Json.array()).asJsonList().add(factory.string("-Diris.installer=true"));
+        json.getOrDefault("arguments", Json.array()).asJsonMap().getOrDefault("jvm", Json.array()).asJsonList().add(factory.string("-Dfabric.modsFolder=" + modsFolder.toAbsolutePath().toString()));
     }
 
     private static void installProfile(Component parent, Path mcDir, Path instanceDir, String profileName, String versionId, Icon icon, ProfileInstaller.LauncherType launcherType) throws IOException {
