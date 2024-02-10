@@ -24,7 +24,7 @@ dependencies {
     implementation "org.json:json:20210307"
     implementation "com.formdev:flatlaf:1.6.1"
     compileOnly "org.lwjgl:lwjgl-tinyfd:3.3.2"
-    implementation "net.fabricmc:fabric-installer:0.11.2"
+    implementation "net.fabricmc:fabric-installer:1.0.0"
 }
 
 application {
@@ -36,7 +36,7 @@ class FileOutput extends DefaultTask {
     File output
 }
 
-def bootstrapVersion = "0.2.0"
+def bootstrapVersion = "0.5.1"
 def bootstrapArch = "i686"
 
 task downloadBootstrap(type: Download) {
