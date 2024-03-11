@@ -90,7 +90,7 @@ public class VanillaLauncherIntegration {
             String key = it.next();
 
             JSONObject foundProfile = profiles.getJSONObject(key);
-            if (foundProfile.has("lastVersionId") && foundProfile.getString("lastVersionId").equals(versionId) && foundProfile.has("gameDir") && foundProfile.getString("gameDir").equals(instanceDir.toString())) {
+            if (!profileName.toLowerCase(Locale.ROOT).contains("beta") && foundProfile.has("lastVersionId") && foundProfile.getString("lastVersionId").equals(versionId) && foundProfile.has("gameDir") && foundProfile.getString("gameDir").equals(instanceDir.toString())) {
                 foundProfileName = key;
             }
         }

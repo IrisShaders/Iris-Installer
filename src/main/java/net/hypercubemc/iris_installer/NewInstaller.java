@@ -95,8 +95,9 @@ public class NewInstaller extends JFrame {
             outdatedText2.setForeground(newTextColor);
         }
 
-        if (!INSTALLER_META.hasBeta()) {
-            betaSelection.setVisible(false);
+        if (!selectedVersion.hasBeta) {
+            betaSelection.setEnabled(false);
+            betaSelection.setSelected(false);
         }
 
         gameVersionList.removeAllItems();
@@ -166,14 +167,16 @@ public class NewInstaller extends JFrame {
                 ZipEntry entry = zipIn.getNextEntry();
                 // iterates over entries in the zip file
                 if (!installAsMod) {
-                    getInstallDir().resolve("iris-reserved/").toFile().mkdir();
+                    getInstallDir().resolve(betaSelection.isSelected() ? "iris-beta-reserved/" : "iris-reserved/").toFile().mkdir();
                 }
+
+                getInstallDir().resolve("shaderpacks").toFile().mkdir();
 
                 while (entry != null) {
                     String entryName = entry.getName();
 
                     if (!installAsMod && entryName.startsWith("mods/")) {
-                        entryName = entryName.replace("mods/", "iris-reserved/" + selectedVersion + "/");
+                        entryName = entryName.replace("mods/", (betaSelection.isSelected() ? "iris-beta-reserved/" : "iris-reserved/") + selectedVersion + "/");
                     }
 
                     File filePath = getInstallDir().resolve(entryName).toFile();
@@ -321,7 +324,7 @@ public class NewInstaller extends JFrame {
         installType.add(standaloneType);
         standaloneType.setFont(standaloneType.getFont().deriveFont((float)16));
         standaloneType.setSelected(true);
-        standaloneType.setText("Iris Install");
+        standaloneType.setText("Iris Only");
         standaloneType.setToolTipText("This installs Iris and Sodium by itself, without any mods.");
         standaloneType.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
@@ -332,7 +335,7 @@ public class NewInstaller extends JFrame {
 
         installType.add(fabricType);
         fabricType.setFont(fabricType.getFont().deriveFont((float)16));
-        fabricType.setText("Fabric Install");
+        fabricType.setText("Iris + Fabric");
         fabricType.setToolTipText("This installs Iris and Sodium alongside an installation of Fabric.");
         fabricType.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
@@ -441,20 +444,21 @@ public class NewInstaller extends JFrame {
 
             if (selectedVersion.outdated) {
                 outdatedText1.setText(outdatedPlaceholder.replace("<version>", selectedVersion.name));
-                betaSelection.setVisible(false);
+                betaSelection.setSelected(false);
+                betaSelection.setEnabled(false);
                 outdatedText1.setVisible(true);
                 outdatedText2.setText("The Iris version you get will most likely be outdated.");
                 outdatedText2.setVisible(true);
             } else if (selectedVersion.snapshot) {
                 outdatedText1.setText(snapshotPlaceholder.replace("<version>", selectedVersion.name));
-                betaSelection.setVisible(false);
+                betaSelection.setSelected(false);
+                betaSelection.setEnabled(false);
                 outdatedText1.setVisible(true);
                 outdatedText2.setText("lose support at any time.");
                 outdatedText2.setVisible(true);
             } else {
-                if (INSTALLER_META.hasBeta()) {
-                    betaSelection.setVisible(true);
-                }
+                betaSelection.setEnabled(selectedVersion.hasBeta);
+                betaSelection.setSelected(false);
                 outdatedText1.setVisible(false);
                 outdatedText2.setVisible(false);
             }
@@ -474,9 +478,9 @@ public class NewInstaller extends JFrame {
 
         try {
             URL loaderVersionUrl = new URL("https://raw.githubusercontent.com/IrisShaders/Iris-Installer-Maven/master/latest-loader");
-            String profileName = installAsMod ? "Fabric Loader " : "Iris & Sodium for ";
+            String profileName = installAsMod ? "Fabric Loader " : (betaSelection.isSelected() ? "Iris " + INSTALLER_META.getBetaSnippet() + " BETA for " : "Iris & Sodium for ");
             VanillaLauncherIntegration.Icon profileIcon = installAsMod ? VanillaLauncherIntegration.Icon.FABRIC : VanillaLauncherIntegration.Icon.IRIS;
-            Path modsFolder0 = installAsMod ? getInstallDir().resolve("mods") : getInstallDir().resolve("iris-reserved").resolve(selectedVersion.name);
+            Path modsFolder0 = installAsMod ? getInstallDir().resolve("mods") : getInstallDir().resolve(betaSelection.isSelected() ? "iris-beta-reserved/" : "iris-reserved/").resolve(selectedVersion.name);
 
             String loaderVersion = Main.LOADER_META.getLatestVersion(false).getVersion();
             boolean success = VanillaLauncherIntegration.installToLauncher(this, getVanillaGameDir(), getInstallDir(), modsFolder0, profileName + selectedVersion.name, selectedVersion.name, loaderName, loaderVersion, profileIcon);
@@ -538,7 +542,7 @@ public class NewInstaller extends JFrame {
                     installDir.mkdir();
                 }
 
-                File modsFolder = installAsMod ? getInstallDir().resolve("mods").toFile() : getInstallDir().resolve("iris-reserved").resolve(selectedVersion.name).toFile();
+                File modsFolder = installAsMod ? getInstallDir().resolve("mods").toFile() : getInstallDir().resolve(betaSelection.isSelected() ? "iris-beta-reserved/" : "iris-reserved/").resolve(selectedVersion.name).toFile();
                 File[] modsFolderContents = modsFolder.listFiles();
 
                 if (modsFolderContents != null) {
