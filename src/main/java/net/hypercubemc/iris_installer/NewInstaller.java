@@ -19,13 +19,13 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ExecutionException;
+import java.util.function.Consumer;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import javax.swing.*;
 
 import net.fabricmc.installer.Main;
 import net.fabricmc.installer.util.MetaHandler;
-import net.fabricmc.installer.util.Reference;
 import net.fabricmc.installer.util.Utils;
 import org.json.JSONException;
 
@@ -46,6 +46,7 @@ public class NewInstaller extends JFrame {
     private final List<InstallerMeta.Version> GAME_VERSIONS;
     private final InstallerMeta INSTALLER_META;
     private Path customInstallDir;
+    private Path customMinecraftDir;
 
     /**
      * Creates new form Installer
@@ -114,6 +115,7 @@ public class NewInstaller extends JFrame {
 
         // Set default dir (.minecraft)
         directoryName.setText(getDefaultInstallDir().toFile().getName());
+        minecraftDirectoryName.setText(getDefaultVanillaGameDir().toFile().getName());
 
         // Hide outdated version text
         outdatedText1.setVisible(false);
@@ -126,6 +128,10 @@ public class NewInstaller extends JFrame {
 
     public Path getInstallDir() {
         return customInstallDir != null ? customInstallDir : getDefaultInstallDir();
+    }
+
+    public Path getGameDir() {
+        return customMinecraftDir != null ? customMinecraftDir : getDefaultVanillaGameDir();
     }
 
     public Path getAppDataDirectory() {
@@ -160,7 +166,7 @@ public class NewInstaller extends JFrame {
         }
     }
 
-    public Path getVanillaGameDir() {
+    private Path getDefaultVanillaGameDir() {
         String os = System.getProperty("os.name").toLowerCase();
 
         return os.contains("mac") ? getAppDataDirectory().resolve("minecraft") : getAppDataDirectory().resolve(".minecraft");
@@ -231,17 +237,17 @@ public class NewInstaller extends JFrame {
         installationTypesContainer = new javax.swing.JPanel();
         standaloneType = new javax.swing.JRadioButton();
         fabricType = new javax.swing.JRadioButton();
+        minecraftDirectoryLabel = new javax.swing.JLabel();
         gameVersionList = new javax.swing.JComboBox<>();
         betaSelection = new javax.swing.JCheckBox();
         directoryName = new javax.swing.JButton();
         progressBar = new javax.swing.JProgressBar();
         installButton = new javax.swing.JButton();
+        minecraftDirectoryName = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setIconImage(new ImageIcon(Objects.requireNonNull(Utils.class.getClassLoader().getResource("iris_profile_icon.png"))).getImage());
-        setMaximumSize(new java.awt.Dimension(480, 600));
-        setMinimumSize(new java.awt.Dimension(480, 600));
-        setPreferredSize(new java.awt.Dimension(480, 600));
+        setMinimumSize(new java.awt.Dimension(480, 550));
         setResizable(false);
         getContentPane().setLayout(new java.awt.GridBagLayout());
 
@@ -315,6 +321,7 @@ public class NewInstaller extends JFrame {
         installationDirectory.setFont(installationDirectory.getFont().deriveFont(installationDirectory.getFont().getStyle() | java.awt.Font.BOLD, 16));
         installationDirectory.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         installationDirectory.setText("Installation directory:");
+        installationDirectory.setToolTipText("The directory to place your Iris and Sodium installation.");
         installationDirectory.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         installationDirectory.setMaximumSize(new java.awt.Dimension(300, 24));
         installationDirectory.setMinimumSize(new java.awt.Dimension(165, 24));
@@ -356,6 +363,21 @@ public class NewInstaller extends JFrame {
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
         getContentPane().add(installationTypesContainer, gridBagConstraints);
 
+        minecraftDirectoryLabel.setFont(minecraftDirectoryLabel.getFont().deriveFont(minecraftDirectoryLabel.getFont().getStyle() | java.awt.Font.BOLD, 16));
+        minecraftDirectoryLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        minecraftDirectoryLabel.setText("Minecraft directory:");
+        minecraftDirectoryLabel.setToolTipText("The directory containing your Minecraft installations and launcher data.");
+        minecraftDirectoryLabel.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        minecraftDirectoryLabel.setMaximumSize(new java.awt.Dimension(300, 24));
+        minecraftDirectoryLabel.setMinimumSize(new java.awt.Dimension(165, 24));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 10;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
+        getContentPane().add(minecraftDirectoryLabel, gridBagConstraints);
+        minecraftDirectoryLabel.getAccessibleContext().setAccessibleName("Minecraft directory");
+
         gameVersionList.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
         gameVersionList.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "1.19", "1.18.2", "1.17.1", "1.16.5" }));
         gameVersionList.setMaximumSize(new java.awt.Dimension(168, 35));
@@ -381,6 +403,7 @@ public class NewInstaller extends JFrame {
         getContentPane().add(betaSelection, gridBagConstraints);
 
         directoryName.setFont(directoryName.getFont().deriveFont((float)16));
+        directoryName.setToolTipText("The directory to place your Iris and Sodium installation.");
         directoryName.setLabel("Directory Name");
         directoryName.setMaximumSize(new java.awt.Dimension(300, 36));
         directoryName.setMinimumSize(new java.awt.Dimension(300, 36));
@@ -404,15 +427,15 @@ public class NewInstaller extends JFrame {
         progressBar.setPreferredSize(new java.awt.Dimension(380, 25));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 10;
+        gridBagConstraints.gridy = 12;
         gridBagConstraints.insets = new java.awt.Insets(40, 0, 0, 0);
         getContentPane().add(progressBar, gridBagConstraints);
 
         installButton.setFont(installButton.getFont().deriveFont((float)16));
         installButton.setText("Install");
         installButton.setToolTipText("");
-        installButton.setMargin(new java.awt.Insets(10, 70, 10, 70));
-        installButton.setMaximumSize(new java.awt.Dimension(320, 45));
+        installButton.setMargin(new java.awt.Insets(10, 65, 10, 65));
+        installButton.setMaximumSize(new java.awt.Dimension(300, 45));
         installButton.setMinimumSize(new java.awt.Dimension(173, 45));
         installButton.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
@@ -422,15 +445,32 @@ public class NewInstaller extends JFrame {
         installButton.putClientProperty( "JButton.buttonType", "roundRect" );
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 11;
+        gridBagConstraints.gridy = 13;
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 30, 0);
         getContentPane().add(installButton, gridBagConstraints);
+
+        minecraftDirectoryName.setFont(minecraftDirectoryName.getFont().deriveFont((float)16));
+        minecraftDirectoryName.setToolTipText("The directory containing your Minecraft installations and launcher data.");
+        minecraftDirectoryName.setLabel("Directory Name");
+        minecraftDirectoryName.setMaximumSize(new java.awt.Dimension(300, 36));
+        minecraftDirectoryName.setMinimumSize(new java.awt.Dimension(300, 36));
+        minecraftDirectoryName.setPreferredSize(new java.awt.Dimension(300, 36));
+        minecraftDirectoryName.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                minecraftDirectoryNameMouseClicked(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 11;
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
+        getContentPane().add(minecraftDirectoryName, gridBagConstraints);
 
         pack();
         setLocationRelativeTo(null);
     }// </editor-fold>//GEN-END:initComponents
 
-    private void directoryNameMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_directoryNameMouseClicked
+    private void chooseDirectory(Consumer<File> callback) {
         JFileChooser fileChooser = new JFileChooser();
         fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         fileChooser.setFileHidingEnabled(false);
@@ -439,9 +479,15 @@ public class NewInstaller extends JFrame {
 
         if (option == JFileChooser.APPROVE_OPTION) {
             File file = fileChooser.getSelectedFile();
+            callback.accept(file);
+        }
+    }
+
+    private void directoryNameMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_directoryNameMouseClicked
+        chooseDirectory(file -> {
             customInstallDir = file.toPath();
             directoryName.setText(file.getName());
-        }
+        });
     }//GEN-LAST:event_directoryNameMouseClicked
 
     private void gameVersionListItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_gameVersionListItemStateChanged
@@ -489,7 +535,7 @@ public class NewInstaller extends JFrame {
             Path modsFolder0 = installAsMod ? getInstallDir().resolve("mods") : getInstallDir().resolve(betaSelection.isSelected() ? "iris-beta-reserved/" : "iris-reserved/").resolve(selectedVersion.name);
 
             String loaderVersion = Main.LOADER_META.getLatestVersion(false).getVersion();
-            boolean success = VanillaLauncherIntegration.installToLauncher(this, getVanillaGameDir(), getInstallDir(), modsFolder0, profileName + selectedVersion.name, selectedVersion.name, loaderName, loaderVersion, profileIcon);
+            boolean success = VanillaLauncherIntegration.installToLauncher(this, getGameDir(), getInstallDir(), modsFolder0, profileName + selectedVersion.name, selectedVersion.name, loaderName, loaderVersion, profileIcon);
             if (!success) {
                 System.out.println("Failed to install to launcher, canceling!");
                 return;
@@ -643,6 +689,13 @@ public class NewInstaller extends JFrame {
         downloader.execute();
     }//GEN-LAST:event_installButtonMouseClicked
 
+    private void minecraftDirectoryNameMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_minecraftDirectoryNameMouseClicked
+        chooseDirectory(file -> {
+            customMinecraftDir = file.toPath();
+            minecraftDirectoryName.setText(file.getName());
+        });
+    }//GEN-LAST:event_minecraftDirectoryNameMouseClicked
+
     /**
      * @param args the command line arguments
      */
@@ -675,6 +728,8 @@ public class NewInstaller extends JFrame {
     private javax.swing.JLabel installationType;
     private javax.swing.JPanel installationTypesContainer;
     private javax.swing.JLabel irisInstallerLabel;
+    private javax.swing.JLabel minecraftDirectoryLabel;
+    private javax.swing.JButton minecraftDirectoryName;
     private javax.swing.JLabel outdatedText1;
     private javax.swing.JLabel outdatedText2;
     private javax.swing.JProgressBar progressBar;
