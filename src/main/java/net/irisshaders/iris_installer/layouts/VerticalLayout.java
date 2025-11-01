@@ -1,4 +1,4 @@
-package net.hypercubemc.iris_installer.layouts;
+package net.irisshaders.iris_installer.layouts;
 
 /**
  THIS PROGRAM IS PROVIDED "AS IS" WITHOUT ANY WARRANTIES (OR CONDITIONS),

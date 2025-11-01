@@ -1,4 +1,4 @@
-package net.hypercubemc.iris_installer;
+package net.irisshaders.iris_installer;
 
 import mjson.Json;
 import net.fabricmc.installer.client.ProfileInstaller;

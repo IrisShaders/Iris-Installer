@@ -1,4 +1,4 @@
-package net.hypercubemc.iris_installer;
+package net.irisshaders.iris_installer;
 
 import com.formdev.flatlaf.FlatDarkLaf;
 import com.formdev.flatlaf.FlatLightLaf;

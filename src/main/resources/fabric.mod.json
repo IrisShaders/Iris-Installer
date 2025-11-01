@@ -14,7 +14,7 @@
   "environment": "*",
   "entrypoints": {
     "preLaunch": [
-      "net.hypercubemc.iris_installer.IrisPreLaunch"
+      "net.irisshaders.iris_installer.IrisPreLaunch"
     ]
   }
 }
